@@ -19,10 +19,10 @@ add_action( 'admin_menu', 'gtm4wp_add_admin_menu' );
 add_action( 'admin_init', 'gtm4wp_settings_init' );
 
 // Theme Hooks Alliance actions
-add_action( 'tha_head_bottom', 'gtm4wp_dataLayer_output' );
-add_action( 'tha_body_top', 'gtm4wp_container_output' );
+add_action( 'tha_head_bottom', 'gtm4wp_dataLayer_output', 10 );
+add_action( 'tha_body_top', 'gtm4wp_container_output', 10 );
 // And in case no THA...
-add_action( 'gtm4wp_render', 'gtm4wp_container_output' );
+add_action( 'gtm4wp_render', 'gtm4wp_container_output', 10 );
 
 
 function gtm4wp_render() {
