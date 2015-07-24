@@ -1,5 +1,5 @@
-# gtm4wp
-Google Tag Manager for WordPress
+# Google Tag Manager 4 WordPress
+Add Google Tag Manager to WordPress
 
 ## Installation
 Please update me!
