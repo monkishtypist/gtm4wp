@@ -127,7 +127,7 @@ function gtm4wp_dataLayer_output() {
 
 	$options = get_option( 'gtm4wp_settings' );
 
-	printf( "dataLayer = [];" );
+	printf( "<script>dataLayer = [];</script>" );
 
 }
 
