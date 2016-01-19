@@ -19,8 +19,8 @@ add_action( 'admin_menu', 'gtm4wp_add_admin_menu' );
 add_action( 'admin_init', 'gtm4wp_settings_init' );
 
 // Theme Hooks Alliance actions
-add_action( 'tha_head_bottom', 'gtm4wp_dataLayer_output', 10 );
-add_action( 'tha_body_top', 'gtm4wp_container_output', 10 );
+add_action( 'wp_head', 'gtm4wp_dataLayer_output', 10 );
+add_action( 'wp_footer', 'gtm4wp_container_output', 10 );
 // And in case no THA...
 add_action( 'gtm4wp_render', 'gtm4wp_container_output', 10 );
 
@@ -72,7 +72,7 @@ function gtm4wp_container_id_render(  ) {
 
 function gtm4wp_settings_section_callback(  ) { 
 
-	echo __( 'This plugin requires you have access to edit your theme files OR your theme includes an \'after_body\' hook.', 'gtm4wp' );
+	echo __( 'This plugin requires you have access to edit your theme files OR your theme includes the \'wp_footer\' hook. See plugin README.md for details.', 'gtm4wp' );
 
 }
 
@@ -127,9 +127,7 @@ function gtm4wp_dataLayer_output() {
 
 	$options = get_option( 'gtm4wp_settings' );
 
-	printf( "<script>
-		dataLayer = [];
-		</script>" );
+	printf( "dataLayer = [];" );
 
 }
 
