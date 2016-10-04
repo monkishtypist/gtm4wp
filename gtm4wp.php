@@ -231,7 +231,6 @@ function gtm4wp_woo_data_layer() {
 		// ORDER RECEIVED page
 		if( is_wc_endpoint_url( 'order-received' ) ):
 			$order = woo_order_obj();
-			debugly($order);
 			$items = $order->get_items();
 			$str .= sprintf('{ \'event\': \'enhanceEcom transactionSuccess\', \'ecommerce\': { \'purchase\': { \'actionField\': { \'id\': \'%s\', \'affiliation\': \'%s\', \'revenue\': %f, \'tax\': %f, \'shipping\': %f, \'coupon\': \'%s\' },', $order->get_order_number(), $brand, $order->order_total, $order->order_tax, $order->order_shipping, 'CouponCode' );
 			$str .= '\'products\': [';
