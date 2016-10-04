@@ -164,18 +164,20 @@ function gtm4wp_woo_data_layer() {
 						\'products\': [';
 			foreach ( $items as $item ) {
 				$product = wc_get_product( $item['product_id'] );
+				$variation = wc_get_product( $item['variation_id'] );
 				$terms = get_the_terms( $product->post->ID, 'product_cat' );
 				echo '<pre>'; print_r($item); echo '</pre>';
 				echo '<pre>'; print_r($product); echo '</pre>';
+				echo '<pre>'; print_r($variation); echo '</pre>';
 				$strArr[] = sprintf('{
 					\'name\': \'%s\',
 					\'id\': %d,
 					\'price\': %f,
 					\'brand\': \'%s\',
 					\'category\': \'%s\',
-					\'variant\': \'Gray\',
-					\'quantity\': 1
-					}', $product->post->post_title, $product->post->ID, $product->get_price(), $brand, $terms->name );
+					\'variant\': \'%s\',
+					\'quantity\': %d
+					}', $product->post->post_title, $product->post->ID, $product->get_price(), $brand, $terms->name, 'Variant', $item['quantity'] );
 			}
 			$str .= implode(',', $strArr);
 			$str .= ']}}}';
