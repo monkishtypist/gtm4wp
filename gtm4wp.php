@@ -164,8 +164,8 @@ function gtm4wp_woo_data_layer() {
 						\'products\': [';
 			foreach ( $items as $item ) {
 				$product = wc_get_product( $item['product_id'] );
-				// $variation = wc_get_product( $item['variation_id'] );
-				$variation = $product->get_variation_attributes();
+				$variation = wc_get_product( $item['variation_id'] );
+				// $variation = $product->get_variation_attributes();
 				$terms = get_the_terms( $product->post->ID, 'product_cat' );
 				echo '<pre>'; print_r($item); echo '</pre>';
 				echo '<pre>'; print_r($product); echo '</pre>';
