@@ -157,17 +157,25 @@ function gtm4wp_woo_data_layer() {
 		// CART page
 		if ( is_cart() ):
 			$items = $woocommerce->cart->get_cart();
-			echo '<pre>'; print_r($items); echo '</pre>';
-			$str .= '{\'cart\' : [';
+			$str .= '{\'event\': \'viewCart\',
+				\'ecommerce\': {
+					\'cart\': {
+					\'actionField\': {\'list\': \'Cart\'},
+					\'products\': [';
 			foreach ( $items as $item ) {
-				echo '<pre>'; print_r($item); echo '</pre>';
-				// $_product		= $cart_item['data'];
-				// $product_id		= $cart_item['product_id'];
-				// $strArr[] = sprintf('{
-				// 		\'name\' : \'%s\',
-				// 		\'price\' : %f,
-				// 		\'quantity\' : %d
-				// 	}', $_product->post->post_title, WC()->cart->get_product_price( $_product ), $cart_item['quantity']);
+				$product = wc_get_product( $item['product_id'] );
+				echo '<pre>'; print_r($product); echo '</pre>';
+				$strArr[] = '{
+					\'name\': \'Triblend Android T-Shirt\',
+					\'id\': \'12345\',
+					\'price\': \'15.25\',
+					\'brand\': \'Google\',
+					\'category\': \'Apparel\',
+					\'variant\': \'Gray\',
+					\'quantity\': 1
+					}]
+					}
+					}');
 			}
 			$str .= implode(',', $strArr);
 			$str .= ']}';
