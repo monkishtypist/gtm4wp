@@ -218,11 +218,14 @@ function gtm4wp_woo_data_layer() {
 			$items = $woocommerce->cart->get_cart();
 			$str .= '{ \'event\': \'viewCart\', \'ecommerce\': {\'cart\': {\'actionField\': {\'list\': \'Cart\'}, \'products\': [';
 			foreach ( $items as $item ) {
-				$product = wc_get_product( $item['product_id'] );
-				$variation = new WC_Product_Variation( $item['variation_id'] );
-				debugly($variation);
+				$product_id = $item['variation_id'];
+				if ( $product_id ) {
+					$product = new WC_Product_Variation( $item['variation_id'] );
+				} else {
+					$product = wc_get_product( $item['product_id'] );
+				}
 				$terms = get_the_terms( $product->post->ID, 'product_cat' );
-				$strArr[] = sprintf('{ \'name\': \'%s\', \'id\': %d, \'price\': %f, \'brand\': \'%s\', \'category\': \'%s\', \'variant\': \'%s\', \'quantity\': %d }', $product->post->post_title, $product->post->ID, $variation->get_price(), $brand, $terms[0]->name, $variation->get_formatted_name(), $item['quantity'] );
+				$strArr[] = sprintf('{ \'name\': \'%s\', \'id\': %d, \'price\': %f, \'brand\': \'%s\', \'category\': \'%s\', \'variant\': \'%s\', \'quantity\': %d }', $product->post->post_title, $product->post->ID, $product->get_price(), $brand, $terms[0]->name, $product->get_sku(), $item['quantity'] );
 			}
 			$str .= implode(',', $strArr);
 			$str .= ']}}}';
