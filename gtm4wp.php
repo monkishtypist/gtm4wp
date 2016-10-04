@@ -160,25 +160,25 @@ function gtm4wp_woo_data_layer() {
 			$str .= '{\'event\': \'viewCart\',
 				\'ecommerce\': {
 					\'cart\': {
-					\'actionField\': {\'list\': \'Cart\'},
-					\'products\': [';
+						\'actionField\': {\'list\': \'Cart\'},
+						\'products\': [';
 			foreach ( $items as $item ) {
 				$product = wc_get_product( $item['product_id'] );
+				$terms = get_the_terms( $product->post->ID, 'product_cat' );
+				echo '<pre>'; print_r($item); echo '</pre>';
 				echo '<pre>'; print_r($product); echo '</pre>';
-				$strArr[] = '{
-					\'name\': \'Triblend Android T-Shirt\',
-					\'id\': \'12345\',
-					\'price\': \'15.25\',
-					\'brand\': \'Google\',
-					\'category\': \'Apparel\',
+				$strArr[] = sprintf('{
+					\'name\': \'%s\',
+					\'id\': %d,
+					\'price\': %f,
+					\'brand\': \'%s\',
+					\'category\': \'%s\',
 					\'variant\': \'Gray\',
 					\'quantity\': 1
-					}]
-					}
-					}';
+					}', $product->post->post_title, $product->post->ID, $product->get_price(), $brand, $terms->name );
 			}
 			$str .= implode(',', $strArr);
-			$str .= ']}';
+			$str .= ']}}}';
 		endif;
 		// PRODUCT CATEGORY
 		if ( is_product_category() && $category ):
@@ -216,7 +216,6 @@ function gtm4wp_woo_data_layer() {
 		if ( is_product() ):
 			$product = wc_get_product( get_the_ID() );
 			$terms = get_the_terms( get_the_ID(), 'product_cat' );
-			var_dump($terms);
 			$str .= sprintf( '{\'event\': \'enhanceEcom Product Detail View\',
 				\'ecommerce\': {
 					\'detail\': {
