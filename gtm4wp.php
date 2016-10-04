@@ -178,7 +178,7 @@ function gtm4wp_woo_data_layer() {
 					\'category\': \'%s\',
 					\'variant\': \'%s\',
 					\'quantity\': %d
-					}', $product->post->post_title, $product->post->ID, $product->get_price(), $brand, $terms->name, 'Variant', $item['quantity'] );
+					}', $product->post->post_title, $product->post->ID, $variation->get_price(), $brand, $terms->name, $variation->get_formatted_name(), $item['quantity'] );
 			}
 			$str .= implode(',', $strArr);
 			$str .= ']}}}';
