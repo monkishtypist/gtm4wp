@@ -187,9 +187,9 @@ function gtm4wp_woo_data_layer() {
 		// PRODUCT pages
 		if ( is_product() ):
 			$product = wc_get_product( get_the_ID() );
-			echo '<pre>'; print_r($product); echo '</pre>';
 			if ( $product->product_type == 'variable' ) {
 				$variations = $product->get_available_variations();
+				echo '<pre>'; print_r($variations); echo '</pre>';
 			}
 			$terms = get_the_terms( $product->post->ID, 'product_cat' );
 			$str .= sprintf( '{\'event\': \'enhanceEcom Product Detail View\',
