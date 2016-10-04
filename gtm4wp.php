@@ -133,6 +133,7 @@ function gtm4wp_datalayer_init() {
 add_action( 'wp_footer', 'gtm4wp_woo_data_layer' );
 function gtm4wp_woo_data_layer() {
 	if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
+		// Globals and default vars
 		global $woocommerce;
 		$options = get_option( 'gtm4wp_settings' );
 		$brand = sanitize_text_field( $options['gtm4wp_brand'] );
@@ -143,6 +144,9 @@ function gtm4wp_woo_data_layer() {
 			$category = false;
 		}
 
+		$str = '';
+		$strArr = array();
+
 
 		// Start Script
 		$str = '<script>dataLayer.push(';
@@ -152,12 +156,13 @@ function gtm4wp_woo_data_layer() {
 			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 				$_product		= $cart_item['data'];
 				$product_id		= $cart_item['product_id'];
-				$str .= sprintf('{
+				$strArr[] = sprintf('{
 						\'name\' : \'%s\',
 						\'price\' : %f,
 						\'quantity\' : %d
-					},', $_product->post->post_title, WC()->cart->get_product_price( $_product ), $cart_item['quantity']);
+					}', $_product->post->post_title, WC()->cart->get_product_price( $_product ), $cart_item['quantity']);
 			}
+			$str .= implode(',', $strArr);
 			$str .= ']}';
 		endif;
 		// PRODUCT CATEGORY
@@ -177,7 +182,7 @@ function gtm4wp_woo_data_layer() {
 					\'impressions\': [';
 			while ( $products->have_posts() ) : $products->the_post(); 
 				global $product;
-				$str .= sprintf( '{
+				$strArr[] = sprintf( '{
 					\'name\': \'%s\',
 					\'id\': %d,
 					\'price\': %f,
@@ -185,20 +190,32 @@ function gtm4wp_woo_data_layer() {
 					\'category\': \'%s\',
 					\'list\': \'%s\',
 					\'position\': %d
-					},', get_the_title(), get_the_ID(), $product->get_price(), $brand, $category->name, $category->name, $i );
+					}', get_the_title(), get_the_ID(), $product->get_price(), $brand, $category->name, $category->name, $i );
 				$i++;
 			endwhile;
 			wp_reset_query();
+			$str .= implode(',', $strArr);
 			$str .= ']}}';
 		endif;
 		// PRODUCT pages
 		if ( is_product() ):
 			$product = wc_get_product( get_the_ID() );
-			$str .= sprintf( '{\'product\' : {
-				\'id\' : \'%s\',
-				\'name\' : \'%s\',
-				\'price\' : %f
-			}}', get_the_ID(), get_the_title(), $product->get_price() );
+			$terms = get_the_terms( get_the_ID(), 'product_cat' );
+			var_dump($terms);
+			$str .= sprintf( '{\'event\': \'enhanceEcom Product Detail View\',
+				\'ecommerce\': {
+					\'detail\': {
+						\'actionField\': {\'list\': \'%s\'},
+						\'products\': [{
+							\'id\': %d,
+							\'name\': \'%s\',
+							\'price\': %f,
+							\'brand\': \'%s\',
+							\'category\': \'%s\',
+							\'variant\': \'\'
+						}]
+					}
+				}}', 'Comfort', get_the_ID(), get_the_title(), $product->get_price(), $brand, 'Category', 'Variant' );
 		endif;
 		// ORDER RECEIVED page
 		if( is_wc_endpoint_url( 'order-received' ) ):
