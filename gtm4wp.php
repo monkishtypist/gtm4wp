@@ -141,12 +141,6 @@ function gtm4wp_woo_data_layer() {
 
 		$options = get_option( 'gtm4wp_settings' );
 		$brand = sanitize_text_field( $options['gtm4wp_brand'] );
-		$category_slug = get_query_var( 'product_cat' );
-		if ( $category_slug ) {
-			$category = get_term_by( 'slug', $category_slug, 'product_cat' );
-		} else {
-			$category = false;
-		}
 
 		$str = '';
 		$strArr = array();
@@ -165,11 +159,7 @@ function gtm4wp_woo_data_layer() {
 			foreach ( $items as $item ) {
 				$product = wc_get_product( $item['product_id'] );
 				$variation = new WC_Product_Variation( $item['variation_id'] );
-				// $variation = $product->get_variation_attributes();
 				$terms = get_the_terms( $product->post->ID, 'product_cat' );
-				echo '<pre>'; print_r($terms); echo '</pre>';
-				echo '<pre>'; print_r($product); echo '</pre>';
-				echo '<pre>'; print_r($variation); echo '</pre>';
 				$strArr[] = sprintf('{
 					\'name\': \'%s\',
 					\'id\': %d,
@@ -178,13 +168,15 @@ function gtm4wp_woo_data_layer() {
 					\'category\': \'%s\',
 					\'variant\': \'%s\',
 					\'quantity\': %d
-					}', $product->post->post_title, $product->post->ID, $variation->get_price(), $brand, $terms->name, $variation->get_formatted_name(), $item['quantity'] );
+					}', $product->post->post_title, $product->post->ID, $variation->get_price(), $brand, $terms[0]->name, $variation->get_formatted_name(), $item['quantity'] );
 			}
 			$str .= implode(',', $strArr);
 			$str .= ']}}}';
 		endif;
 		// PRODUCT CATEGORY
-		if ( is_product_category() && $category ):
+		if ( is_product_category() ):
+			$category_slug = get_query_var( 'product_cat' );
+			if ( $category_slug ) { $category = get_term_by( 'slug', $category_slug, 'product_cat' ); }
 			$i = 1;
 			// Get all products in category
 			$args = array(
@@ -218,7 +210,9 @@ function gtm4wp_woo_data_layer() {
 		// PRODUCT pages
 		if ( is_product() ):
 			$product = wc_get_product( get_the_ID() );
-			$terms = get_the_terms( get_the_ID(), 'product_cat' );
+			echo '<pre>'; print_r($product); echo '</pre>';
+			$variation = new WC_Product_Variation( get_the_ID() );
+			$terms = get_the_terms( $product->post->ID, 'product_cat' );
 			$str .= sprintf( '{\'event\': \'enhanceEcom Product Detail View\',
 				\'ecommerce\': {
 					\'detail\': {
@@ -232,7 +226,7 @@ function gtm4wp_woo_data_layer() {
 							\'variant\': \'\'
 						}]
 					}
-				}}', $terms->name, get_the_ID(), get_the_title(), $product->get_price(), $brand, $terms->name, 'Variant' );
+				}}', $terms->name, get_the_ID(), get_the_title(), $product->get_price(), $brand, $terms[0]->name, 'Variant' );
 		endif;
 		// ORDER RECEIVED page
 		if( is_wc_endpoint_url( 'order-received' ) ):
