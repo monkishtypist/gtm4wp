@@ -135,6 +135,8 @@ function gtm4wp_woo_data_layer() {
 	if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 		// Globals and default vars
 		global $woocommerce;
+		echo '<pre>'; print_r($woocommerce); echo '</pre>';
+		
 		$options = get_option( 'gtm4wp_settings' );
 		$brand = sanitize_text_field( $options['gtm4wp_brand'] );
 		$category_slug = get_query_var( 'product_cat' );
@@ -215,7 +217,7 @@ function gtm4wp_woo_data_layer() {
 							\'variant\': \'\'
 						}]
 					}
-				}}', 'Comfort', get_the_ID(), get_the_title(), $product->get_price(), $brand, 'Category', 'Variant' );
+				}}', $terms->name, get_the_ID(), get_the_title(), $product->get_price(), $brand, $terms->name, 'Variant' );
 		endif;
 		// ORDER RECEIVED page
 		if( is_wc_endpoint_url( 'order-received' ) ):
