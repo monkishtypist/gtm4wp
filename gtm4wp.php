@@ -160,13 +160,14 @@ function gtm4wp_woo_data_layer() {
 			echo '<pre>'; print_r($items); echo '</pre>';
 			$str .= '{\'cart\' : [';
 			foreach ( $items as $item ) {
-				$_product		= $cart_item['data'];
-				$product_id		= $cart_item['product_id'];
-				$strArr[] = sprintf('{
-						\'name\' : \'%s\',
-						\'price\' : %f,
-						\'quantity\' : %d
-					}', $_product->post->post_title, WC()->cart->get_product_price( $_product ), $cart_item['quantity']);
+				var_dump($item);
+				// $_product		= $cart_item['data'];
+				// $product_id		= $cart_item['product_id'];
+				// $strArr[] = sprintf('{
+				// 		\'name\' : \'%s\',
+				// 		\'price\' : %f,
+				// 		\'quantity\' : %d
+				// 	}', $_product->post->post_title, WC()->cart->get_product_price( $_product ), $cart_item['quantity']);
 			}
 			$str .= implode(',', $strArr);
 			$str .= ']}';
