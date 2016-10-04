@@ -160,7 +160,7 @@ function gtm4wp_woo_data_layer() {
 			echo '<pre>'; print_r($items); echo '</pre>';
 			$str .= '{\'cart\' : [';
 			foreach ( $items as $item ) {
-				var_dump($item);
+				echo '<pre>'; print_r($item); echo '</pre>';
 				// $_product		= $cart_item['data'];
 				// $product_id		= $cart_item['product_id'];
 				// $strArr[] = sprintf('{
