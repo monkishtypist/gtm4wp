@@ -231,32 +231,22 @@ function gtm4wp_woo_data_layer() {
 		// ORDER RECEIVED page
 		if( is_wc_endpoint_url( 'order-received' ) ):
 			$order = woo_order_obj();
-			//var_dump($order);
+			debugly($order);
 			$items = $order->get_items();
-			$str .= sprintf( '{\'order\' : {
-					\'id\' : \'%s\',
-					\'email\' : \'%s\',
-					\'country\' : \'%s\',
-					\'currency\' : \'%s\',
-					\'total\' : %f,
-					\'discounts\' : %f,
-					\'shipping-total\' : %f,
-					\'tax-total\' : %f,
-					\'est-ship-date\' : \'%s\',
-					\'est-delivery-date\' : \'%s\',
-					\'has-preorder\' : \'\',
-					\'has-digital\' : \'\',
-				},', $order->get_order_number(), $order->billing_email, $order->billing_country, $order->order_currency, $order->order_total, $order->cart_discount, $order->order_shipping, $order->order_tax, date( 'Y-m-d', strtotime( '+1 weekday' ) ), date( 'Y-m-d', strtotime('+6 weekday') ) );
-			$str .= '\'items\' : [';
+			$str .= sprintf('{ \'event\': \'enhanceEcom transactionSuccess\', \'ecommerce\': { \'purchase\': { \'actionField\': { \'id\': \'%s\', \'affiliation\': \'%s\', \'revenue\': %f, \'tax\': %f, \'shipping\': %f, \'coupon\': \'%s\' },', $order->get_order_number(), $brand, $order->order_total, $order->order_tax, $order->order_shipping, 'CouponCode' );
+			$str .= '\'products\': [';
 			foreach ( $items as $item ) {
-				$str .= sprintf( '{
-						\'name\' : \'%s\',
-						\'price\' : %f,
-						\'quantity\' : %d
-					},', $item['name'], number_format( (float) $item['line_total'], 2, '.', '' ), $item['qty'] );
+				$product_id = $item['variation_id'];
+				if ( $product_id ) {
+					$product = new WC_Product_Variation( $item['variation_id'] );
+				} else {
+					$product = new WC_Product( $item['product_id'] );
+				}
+				$terms = get_the_terms( $product->post->ID, 'product_cat' );
+				$strArr[] = sprintf('{ \'name\': \'%s\', \'id\': \'%s\', \'price\': %f, \'brand\': \'%s\', \'category\': \'%s\', \'variant\': \'%s\', \'quantity\': %d, \'coupon\': \'%s\' }', $product->post->post_title, $product->get_sku(), $product->get_price(), $brand, $terms[0]->name, $product->get_sku(), $item['quantity'], 'CouponCode' );
 			}
-			$str .= ']';
-			$str .= '}';
+			$str .= implode(',', $strArr);
+			$str .= ']}}}';
 		endif;
 
 		$str .= ');</script>';
