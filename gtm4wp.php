@@ -126,17 +126,19 @@ function gtm4wp_datalayer_init() {
 }
 
 
-/* WooCommerce DataLayer
+/* Enhanced Ecommerce DataLayer
  *
  * This function pushes WooCommerce data into the dataLayer object.
+ *
+ * https://developers.google.com/tag-manager/enhanced-ecommerce
  */
 add_action( 'wp_footer', 'gtm4wp_woo_data_layer' );
 function gtm4wp_woo_data_layer() {
 	if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 		// Globals and default vars
 		global $woocommerce;
-		echo '<pre>'; print_r($woocommerce); echo '</pre>';
-		
+		//echo '<pre>'; print_r($woocommerce); echo '</pre>';
+
 		$options = get_option( 'gtm4wp_settings' );
 		$brand = sanitize_text_field( $options['gtm4wp_brand'] );
 		$category_slug = get_query_var( 'product_cat' );
@@ -154,8 +156,10 @@ function gtm4wp_woo_data_layer() {
 		$str = '<script>dataLayer.push(';
 		// CART page
 		if ( is_cart() ):
+			$items = $woocommerce->cart->get_cart();
+			echo '<pre>'; print_r($items); echo '</pre>';
 			$str .= '{\'cart\' : [';
-			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			foreach ( $items as $item ) {
 				$_product		= $cart_item['data'];
 				$product_id		= $cart_item['product_id'];
 				$strArr[] = sprintf('{
