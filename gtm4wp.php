@@ -175,7 +175,7 @@ function gtm4wp_woo_data_layer() {
 					\'quantity\': 1
 					}]
 					}
-					}');
+					}';
 			}
 			$str .= implode(',', $strArr);
 			$str .= ']}';
