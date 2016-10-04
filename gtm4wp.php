@@ -148,31 +148,7 @@ function gtm4wp_woo_data_layer() {
 
 		// Start Script
 		$str = '<script>dataLayer.push(';
-		// CART page
-		if ( is_cart() ):
-			$items = $woocommerce->cart->get_cart();
-			$str .= '{\'event\': \'viewCart\',
-				\'ecommerce\': {
-					\'cart\': {
-						\'actionField\': {\'list\': \'Cart\'},
-						\'products\': [';
-			foreach ( $items as $item ) {
-				$product = wc_get_product( $item['product_id'] );
-				$variation = new WC_Product_Variation( $item['variation_id'] );
-				$terms = get_the_terms( $product->post->ID, 'product_cat' );
-				$strArr[] = sprintf('{
-					\'name\': \'%s\',
-					\'id\': %d,
-					\'price\': %f,
-					\'brand\': \'%s\',
-					\'category\': \'%s\',
-					\'variant\': \'%s\',
-					\'quantity\': %d
-					}', $product->post->post_title, $product->post->ID, $variation->get_price(), $brand, $terms[0]->name, $variation->get_formatted_name(), $item['quantity'] );
-			}
-			$str .= implode(',', $strArr);
-			$str .= ']}}}';
-		endif;
+
 		// PRODUCT CATEGORY
 		if ( is_product_category() ):
 			$category_slug = get_query_var( 'product_cat' );
@@ -207,11 +183,14 @@ function gtm4wp_woo_data_layer() {
 			$str .= implode(',', $strArr);
 			$str .= ']}}';
 		endif;
+
 		// PRODUCT pages
 		if ( is_product() ):
 			$product = wc_get_product( get_the_ID() );
 			echo '<pre>'; print_r($product); echo '</pre>';
-			$variation = new WC_Product_Variation( get_the_ID() );
+			if ( $product->product_type == 'variable' ) {
+				$variations = $product->get_available_variations();
+			}
 			$terms = get_the_terms( $product->post->ID, 'product_cat' );
 			$str .= sprintf( '{\'event\': \'enhanceEcom Product Detail View\',
 				\'ecommerce\': {
@@ -228,6 +207,33 @@ function gtm4wp_woo_data_layer() {
 					}
 				}}', $terms->name, get_the_ID(), get_the_title(), $product->get_price(), $brand, $terms[0]->name, 'Variant' );
 		endif;
+
+		// CART page
+		if ( is_cart() ):
+			$items = $woocommerce->cart->get_cart();
+			$str .= '{\'event\': \'viewCart\',
+				\'ecommerce\': {
+					\'cart\': {
+						\'actionField\': {\'list\': \'Cart\'},
+						\'products\': [';
+			foreach ( $items as $item ) {
+				$product = wc_get_product( $item['product_id'] );
+				$variation = new WC_Product_Variation( $item['variation_id'] );
+				$terms = get_the_terms( $product->post->ID, 'product_cat' );
+				$strArr[] = sprintf('{
+					\'name\': \'%s\',
+					\'id\': %d,
+					\'price\': %f,
+					\'brand\': \'%s\',
+					\'category\': \'%s\',
+					\'variant\': \'%s\',
+					\'quantity\': %d
+					}', $product->post->post_title, $product->post->ID, $variation->get_price(), $brand, $terms[0]->name, $variation->get_formatted_name(), $item['quantity'] );
+			}
+			$str .= implode(',', $strArr);
+			$str .= ']}}}';
+		endif;
+
 		// ORDER RECEIVED page
 		if( is_wc_endpoint_url( 'order-received' ) ):
 			$order = woo_order_obj();
