@@ -130,54 +130,54 @@ function gtm4wp_datalayer_init() {
  *
  * This function pushes WooCommerce data into the dataLayer object.
  */
-add_action( 'wp_footer', 'woo_data_layer' );
-function woo_data_layer() {
+add_action( 'wp_footer', 'gtm4wp_woo_data_layer' );
+function gtm4wp_woo_data_layer() {
 	if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 		global $woocommerce;
 		$options = get_option( 'gtm4wp_settings' );
 		$brand = sanitize_text_field( $options['gtm4wp_brand'] );
 		$category_slug = get_query_var( 'product_cat' );
+		if ( $category_slug ) {
+			$category = get_term_by( 'slug', $category_slug, 'product_cat' );
+		} else {
+			$category = false;
+		}
 
-		echo '<pre>'; print_r( $category_slug ); echo '</pre>';
 
+		// Start Script
+		$str = '<script>dataLayer.push(';
 		// CART page
 		if ( is_cart() ):
-			$str = '<script>dataLayer.push({"cart" : [';
+			$str .= '{\'cart\' : [';
 			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-				//print_r($cart_item);
-				//print_r(WC()->cart->get_item_data($cart_item, true));
-				$_product	 = $cart_item['data'];
-				$product_id   = $cart_item['product_id'];
+				$_product		= $cart_item['data'];
+				$product_id		= $cart_item['product_id'];
 				$str .= sprintf('{
-						"name" : "%s",
-						"price" : %f,
-						"quantity" : %d
+						\'name\' : \'%s\',
+						\'price\' : %f,
+						\'quantity\' : %d
 					},', $_product->post->post_title, WC()->cart->get_product_price( $_product ), $cart_item['quantity']);
 			}
-			$str .= ']});</script>';
+			$str .= ']}';
 		endif;
 		// PRODUCT CATEGORY
-		if ( is_product_category() ):
+		if ( is_product_category() && $category ):
 			$i = 1;
-			$category				   = get_term_by( 'slug', $category_slug, 'product_cat' );
-			var_dump($category);
 			// Get all products in category
 			$args = array(
-				'post_type'			 => 'product',
-				'post_status'		   => 'publish',
+				'post_type'				=> 'product',
+				'post_status'			=> 'publish',
 				'posts_per_page'		=> -1,
-				'product_cat'		   => $category_slug
+				'product_cat'			=> $category_slug
 			);
 			$products = new WP_Query($args);
-			echo '<pre>'; print_r($products); echo '</pre>';
-			$str = '<script>
-				dataLayer.push({
-					\'event\':\'enhanceEcom Product Impression\',
-					\'ecommerce\': {
-						\'impressions\': [';
+			$str .= '{
+				\'event\':\'enhanceEcom Product Impression\',
+				\'ecommerce\': {
+					\'impressions\': [';
 			while ( $products->have_posts() ) : $products->the_post(); 
 				global $product;
-				$str .= sprintf('{
+				$str .= sprintf( '{
 					\'name\': \'%s\',
 					\'id\': %d,
 					\'price\': %f,
@@ -185,96 +185,53 @@ function woo_data_layer() {
 					\'category\': \'%s\',
 					\'list\': \'%s\',
 					\'position\': %d
-					},', get_the_title(), get_the_ID(), $product->get_price(), $brand, $category, $category, $i);
+					},', get_the_title(), get_the_ID(), $product->get_price(), $brand, $category->name, $category->name, $i );
 				$i++;
 			endwhile;
 			wp_reset_query();
-			$str .= ']}});</script>';
-		endif;
-		// PRODUCT CATEGORY - Travel Pillows
-		if ( is_page(6608) ):
-			$i = 1;
-			$category				   = 'Travel Pillows';
-			$category_slug			  = 'travel-pillows';
-			// Get all products in category
-			$args = array(
-				'post_type'			 => 'product',
-				'post_status'		   => 'publish',
-				'posts_per_page'		=> -1,
-				'product_cat'		   => $category_slug
-			);
-			$products = new WP_Query($args);
-			echo '<pre>'; print_r($products); echo '</pre>';
-			$str = '<script>
-				dataLayer.push({
-					\'event\':\'enhanceEcom Product Impression\',
-					\'ecommerce\': {
-						\'impressions\': [';
-			while ( $products->have_posts() ) : $products->the_post(); 
-				global $product;
-				$str .= sprintf('{
-					\'name\': \'%s\',
-					\'id\': %d,
-					\'price\': %f,
-					\'brand\': \'%s\',
-					\'category\': \'%s\',
-					\'list\': \'%s\',
-					\'position\': %d
-					},', get_the_title(), get_the_ID(), $product->get_price(), $brand, $category, $category, $i);
-				$i++;
-			endwhile;
-			wp_reset_query();
-			$str .= ']}});</script>';
-		endif;
-		// PRODUCT CATEGORY - Comfort
-		if ( is_page(6785) ):
-			var_dump(WC());
-		endif;
-		// PRODUCT CATEGORY - Accessories
-		if ( is_page(6788) ):
-			var_dump(WC());
+			$str .= ']}}';
 		endif;
 		// PRODUCT pages
 		if ( is_product() ):
 			$product = wc_get_product( get_the_ID() );
-			$price = $product->get_price();
-			$str = sprintf('<script>dataLayer.push({"product" : {
-				"id" : "%s",
-				"name" : "%s",
-				"price" : %f
-			}})</script>', get_the_ID(), get_the_title(), $price);
+			$str .= sprintf( '{\'product\' : {
+				\'id\' : \'%s\',
+				\'name\' : \'%s\',
+				\'price\' : %f
+			}}', get_the_ID(), get_the_title(), $product->get_price() );
 		endif;
 		// ORDER RECEIVED page
 		if( is_wc_endpoint_url( 'order-received' ) ):
 			$order = woo_order_obj();
 			//var_dump($order);
 			$items = $order->get_items();
-			$str = sprintf('<script>dataLayer.push({
-				"order" : {
-					"id" : %d,
-					"email" : "%s",
-					"country" : "%s",
-					"currency" : "%s",
-					"total" : %f,
-					"discounts" : %f,
-					"shipping-total" : %f,
-					"tax-total" : %f,
-					"est-ship-date" : "%s",
-					"est-delivery-date" : "%s",
-					"has-preorder" : "",
-					"has-digital" : "",
-				},', $order->get_order_number(), $order->billing_email, $order->billing_country, $order->order_currency, $order->order_total, $order->cart_discount, $order->order_shipping, $order->order_tax, date('Y-m-d', strtotime('+1 weekday')), date('Y-m-d', strtotime('+6 weekday')));
-			$str .= '"items" : [';
+			$str .= sprintf( '{\'order\' : {
+					\'id\' : %d,
+					\'email\' : \'%s\',
+					\'country\' : \'%s\',
+					\'currency\' : \'%s\',
+					\'total\' : %f,
+					\'discounts\' : %f,
+					\'shipping-total\' : %f,
+					\'tax-total\' : %f,
+					\'est-ship-date\' : \'%s\',
+					\'est-delivery-date\' : \'%s\',
+					\'has-preorder\' : \'\',
+					\'has-digital\' : \'\',
+				},', $order->get_order_number(), $order->billing_email, $order->billing_country, $order->order_currency, $order->order_total, $order->cart_discount, $order->order_shipping, $order->order_tax, date( 'Y-m-d', strtotime( '+1 weekday' ) ), date( 'Y-m-d', strtotime('+6 weekday') ) );
+			$str .= '\'items\' : [';
 			foreach ( $items as $item ) {
-				$str .= sprintf('{
-						"name" : "%s",
-						"price" : %f,
-						"quantity" : %d
-					},', $item['name'], number_format((float)$item['line_total'], 2, '.', ''), $item['qty']);
+				$str .= sprintf( '{
+						\'name\' : \'%s\',
+						\'price\' : %f,
+						\'quantity\' : %d
+					},', $item['name'], number_format( (float) $item['line_total'], 2, '.', '' ), $item['qty'] );
 			}
 			$str .= ']';
-			$str .= '});</script>';
+			$str .= '}';
 		endif;
+
+		$str .= ');</script>';
 		// print script
 		print($str);
 	} else {
