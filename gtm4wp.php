@@ -151,6 +151,7 @@ function gtm4wp_woo_data_layer() {
 
 		// PRODUCT CATEGORY
 		if ( is_product_category() ):
+			$category = '';
 			$category_slug = get_query_var( 'product_cat' );
 			if ( $category_slug ) { $category = get_term_by( 'slug', $category_slug, 'product_cat' ); }
 			$i = 1;
@@ -162,21 +163,10 @@ function gtm4wp_woo_data_layer() {
 				'product_cat'			=> $category_slug
 			);
 			$products = new WP_Query($args);
-			$str .= '{
-				\'event\':\'enhanceEcom Product Impression\',
-				\'ecommerce\': {
-					\'impressions\': [';
+			$str .= '{ \'event\':\'enhanceEcom Product Impression\', \'ecommerce\': { \'impressions\': [';
 			while ( $products->have_posts() ) : $products->the_post(); 
 				global $product;
-				$strArr[] = sprintf( '{
-					\'name\': \'%s\',
-					\'id\': %d,
-					\'price\': %f,
-					\'brand\': \'%s\',
-					\'category\': \'%s\',
-					\'list\': \'%s\',
-					\'position\': %d
-					}', get_the_title(), get_the_ID(), $product->get_price(), $brand, $category->name, $category->name, $i );
+				$strArr[] = sprintf( '{ \'name\': \'%s\', \'id\': \'%s\', \'price\': %f, \'brand\': \'%s\', \'category\': \'%s\', \'list\': \'%s\', \'position\': %d }', get_the_title(), $product->get_sku(), $product->get_price(), $brand, $category->name, $category->name, $i );
 				$i++;
 			endwhile;
 			wp_reset_query();
@@ -186,7 +176,7 @@ function gtm4wp_woo_data_layer() {
 
 		// PRODUCT pages
 		if ( is_product() ):
-			$product = wc_get_product( get_the_ID() );
+			$product = new WC_Product( get_the_ID() );
 			$variation_skus = '';
 			if ( $product->product_type == 'variable' ) { // Get variation Skus
 				$variations = $product->get_available_variations();
@@ -199,33 +189,40 @@ function gtm4wp_woo_data_layer() {
 				$variation_skus .= '}]';
 			}
 			$terms = get_the_terms( $product->post->ID, 'product_cat' );
-			$str .= sprintf( '{\'event\': \'enhanceEcom Product Detail View\',
-				\'ecommerce\': {
-					\'detail\': {
-						\'actionField\': {\'list\': \'%s\'},
-						\'products\': [{
-							\'id\': %d,
-							\'name\': \'%s\',
-							\'price\': %f,
-							\'brand\': \'%s\',
-							\'category\': \'%s\',
-							\'variant\': \'%s\'
-						}]}}}', $terms[0]->name, get_the_ID(), get_the_title(), $product->get_price(), $brand, $terms[0]->name, $variation_skus );
+			$str .= sprintf( '{\'event\': \'enhanceEcom Product Detail View\', \'ecommerce\': { \'detail\': { \'actionField\': {\'list\': \'%s\'}, \'products\': [{ \'id\': \'%s\', \'name\': \'%s\', \'price\': %f, \'brand\': \'%s\', \'category\': \'%s\', \'variant\': \'%s\' }]}}}', $terms[0]->name, $product->get_sku(), get_the_title(), $product->get_price(), $brand, $terms[0]->name, $variation_skus );
 		endif;
 
 		// CART page
 		if ( is_cart() ):
 			$items = $woocommerce->cart->get_cart();
-			$str .= '{ \'event\': \'viewCart\', \'ecommerce\': {\'cart\': {\'actionField\': {\'list\': \'Cart\'}, \'products\': [';
+			$str .= '{ \'event\': \'view Cart\', \'ecommerce\': { \'cart\': { \'products\': [';
 			foreach ( $items as $item ) {
 				$product_id = $item['variation_id'];
 				if ( $product_id ) {
 					$product = new WC_Product_Variation( $item['variation_id'] );
 				} else {
-					$product = wc_get_product( $item['product_id'] );
+					$product = new WC_Product( $item['product_id'] );
 				}
 				$terms = get_the_terms( $product->post->ID, 'product_cat' );
-				$strArr[] = sprintf('{ \'name\': \'%s\', \'id\': %d, \'price\': %f, \'brand\': \'%s\', \'category\': \'%s\', \'variant\': \'%s\', \'quantity\': %d }', $product->post->post_title, $product->post->ID, $product->get_price(), $brand, $terms[0]->name, $product->get_sku(), $item['quantity'] );
+				$strArr[] = sprintf('{ \'name\': \'%s\', \'id\': \'%s\', \'price\': %f, \'brand\': \'%s\', \'category\': \'%s\', \'variant\': \'%s\', \'quantity\': %d }', $product->post->post_title, $product->get_sku(), $product->get_price(), $brand, $terms[0]->name, $product->get_sku(), $item['quantity'] );
+			}
+			$str .= implode(',', $strArr);
+			$str .= ']}}}';
+		endif;
+
+		// CHECKOUT page
+		if ( is_checkout() ):
+			$items = $woocommerce->cart->get_cart();
+			$str .= '{ \'event\': \'Product Checkout\', \'ecommerce\': { \'checkout\': { \'products\': [';
+			foreach ( $items as $item ) {
+				$product_id = $item['variation_id'];
+				if ( $product_id ) {
+					$product = new WC_Product_Variation( $item['variation_id'] );
+				} else {
+					$product = new WC_Product( $item['product_id'] );
+				}
+				$terms = get_the_terms( $product->post->ID, 'product_cat' );
+				$strArr[] = sprintf('{ \'name\': \'%s\', \'id\': \'%s\', \'price\': %f, \'brand\': \'%s\', \'category\': \'%s\', \'variant\': \'%s\', \'quantity\': %d }', $product->post->post_title, $product->get_sku(), $product->get_price(), $brand, $terms[0]->name, $product->get_sku(), $item['quantity'] );
 			}
 			$str .= implode(',', $strArr);
 			$str .= ']}}}';
@@ -237,7 +234,7 @@ function gtm4wp_woo_data_layer() {
 			//var_dump($order);
 			$items = $order->get_items();
 			$str .= sprintf( '{\'order\' : {
-					\'id\' : %d,
+					\'id\' : \'%s\',
 					\'email\' : \'%s\',
 					\'country\' : \'%s\',
 					\'currency\' : \'%s\',
