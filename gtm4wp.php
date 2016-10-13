@@ -1,19 +1,17 @@
 <?php
 /**
  * Plugin Name: Google Tag Manager 4 WordPress
- * Plugin URI: http://ninthlink.com
- * Description: Add Google Tag Manager to WordPress
- * Version: 0.1.0
- * Author: Ninthlink, Inc.
- * Author URI: http://ninthlink.com
+ * Plugin URI: https://github.com/progothemes/gtm4wp
+ * Description: Add Google Tag Manager to WordPress, with advanced eCommerce DataLayer support for WooCommerce
+ * Version: 1.2.1
+ * Author: ProGo
+ * Author URI: http://www.progo.com
  * Text Domain: gtm4wp
  * License: GPL2
  */
 
-
 //exit if accessed directly
 if(!defined('ABSPATH')) exit;
-
 
 add_action( 'admin_menu', 'gtm4wp_add_admin_menu' );
 add_action( 'admin_init', 'gtm4wp_settings_init' );
@@ -25,57 +23,53 @@ add_action( 'wp_footer', 'gtm4wp_container_output', 100 );
 // And in case no THA...
 add_action( 'gtm4wp_render', 'gtm4wp_container_output', 10 );
 
-
 function gtm4wp_render() {
 	do_action( 'gtm4wp_render' ); // use for hooking if tha_body_top not available
 }
 
-
-function gtm4wp_add_admin_menu(  ) { 
+function gtm4wp_add_admin_menu(  ) {
 	add_submenu_page( 'options-general.php', 'GTM 4 WP', 'Google Tag Manager', 'manage_options', 'gtmforwordpress', 'gtm4wp_options_page' );
 }
 
-
-function gtm4wp_settings_init(  ) { 
+function gtm4wp_settings_init(  ) {
 	register_setting( 'pluginPage', 'gtm4wp_settings' );
 	add_settings_section(
-		'gtm4wp_pluginPage_section', 
-		__( 'Add Google Tag Manager to WordPress', 'gtm4wp' ), 
-		'gtm4wp_settings_section_callback', 
+		'gtm4wp_pluginPage_section',
+		__( 'Add Google Tag Manager to WordPress', 'gtm4wp' ),
+		'gtm4wp_settings_section_callback',
 		'pluginPage'
 	);
-	add_settings_field( 
-		'gtm4wp_container_id', 
-		__( 'Container ID', 'gtm4wp' ), 
-		'gtm4wp_container_id_render', 
-		'pluginPage', 
-		'gtm4wp_pluginPage_section' 
+	add_settings_field(
+		'gtm4wp_container_id',
+		__( 'Container ID', 'gtm4wp' ),
+		'gtm4wp_container_id_render',
+		'pluginPage',
+		'gtm4wp_pluginPage_section'
 	);
-	add_settings_field( 
-		'gtm4wp_brand', 
-		__( 'Brand', 'gtm4wp' ), 
-		'gtm4wp_brand_render', 
-		'pluginPage', 
-		'gtm4wp_pluginPage_section' 
+	add_settings_field(
+		'gtm4wp_brand',
+		__( 'Brand', 'gtm4wp' ),
+		'gtm4wp_brand_render',
+		'pluginPage',
+		'gtm4wp_pluginPage_section'
 	);
 }
 
-
-function gtm4wp_container_id_render(  ) { 
+function gtm4wp_container_id_render(  ) {
 	$options = get_option( 'gtm4wp_settings' );
 	?>
 	<input type='text' name='gtm4wp_settings[gtm4wp_container_id]' value='<?php echo $options['gtm4wp_container_id']; ?>'>
 	<?php
 }
-function gtm4wp_brand_render(  ) { 
+
+function gtm4wp_brand_render(  ) {
 	$options = get_option( 'gtm4wp_settings' );
 	?>
 	<input type='text' name='gtm4wp_settings[gtm4wp_brand]' value='<?php echo $options['gtm4wp_brand']; ?>'>
 	<?php
 }
 
-
-function gtm4wp_settings_section_callback(  ) { 
+function gtm4wp_settings_section_callback(  ) {
 	echo __( 'This plugin requires you have access to edit your theme files OR your theme includes the \'wp_footer\' hook. See plugin README.md for details.', 'gtm4wp' );
 }
 
@@ -83,7 +77,7 @@ function gtm4wp_settings_section_callback(  ) {
  * Options Page
  *
  */
-function gtm4wp_options_page(  ) { 
+function gtm4wp_options_page(  ) {
 	?>
 	<form action='options.php' method='post'>
 		<h2>GTMforWordPress</h2>
@@ -125,7 +119,6 @@ function gtm4wp_datalayer_init() {
 	printf( "<script>window.dataLayer = window.dataLayer || [];</script>" );
 }
 
-
 /* Enhanced Ecommerce DataLayer
  *
  * This function pushes WooCommerce data into the dataLayer object.
@@ -164,7 +157,7 @@ function gtm4wp_woo_data_layer() {
 			);
 			$products = new WP_Query($args);
 			$str .= '{ \'event\':\'enhanceEcom Product Impression\', \'ecommerce\': { \'impressions\': [';
-			while ( $products->have_posts() ) : $products->the_post(); 
+			while ( $products->have_posts() ) : $products->the_post();
 				global $product;
 				$strArr[] = sprintf( '{ \'name\': \'%s\', \'id\': \'%s\', \'price\': %f, \'brand\': \'%s\', \'category\': \'%s\', \'list\': \'%s\', \'position\': %d }', get_the_title(), $product->get_sku(), $product->get_price(), $brand, $category->name, $category->name, $i );
 				$i++;
@@ -254,11 +247,4 @@ function gtm4wp_woo_data_layer() {
 	} else {
 		return false;
 	}
-}
-
-
-function debugly( $obj ) {
-	print('<pre>');
-	print_r($obj);
-	print('</pre>');
 }
