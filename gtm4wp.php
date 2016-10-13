@@ -17,9 +17,10 @@ add_action( 'admin_menu', 'gtm4wp_add_admin_menu' );
 add_action( 'admin_init', 'gtm4wp_settings_init' );
 
 // Theme Hooks Alliance actions
-add_action( 'wp_head', 'gtm4wp_datalayer_init', 100 );
+add_action( 'wp_head', 'gtm4wp_datalayer_init', 1 );
+add_action( 'wp_head', 'gtm4wp_container_output', 2 );
 add_action( 'wp_footer', 'gtm4wp_woo_datalayer', 10 );
-add_action( 'wp_footer', 'gtm4wp_container_output', 100 );
+add_action( 'tha_body_top', 'gtm4wp_noscript_output', 2 );
 // And in case no THA...
 add_action( 'gtm4wp_render', 'gtm4wp_container_output', 10 );
 
@@ -70,7 +71,8 @@ function gtm4wp_brand_render(  ) {
 }
 
 function gtm4wp_settings_section_callback(  ) {
-	echo __( 'This plugin requires you have access to edit your theme files OR your theme includes the \'wp_footer\' hook. See plugin README.md for details.', 'gtm4wp' );
+	echo '<p>'. __( 'This plugin requires you have access to edit your theme files OR your theme includes a \'tha_body_top\' hook. Per updated Google Tag Manager best practices, there is one section of code which will be injected in the \'wp_head\' area, and another pixel piece which should appear immediately after the opening body tag, which is where \'tha_body_top\' would output.', 'gtm4wp' ) .'</p>';
+	echo '<p>'. __( 'For more information, see ', 'gtm4wp' ) .'<a href="https://github.com/progothemes/gtm4wp" target="_blank">https://github.com/progothemes/gtm4wp</a></p>';
 }
 
 /**
@@ -99,15 +101,23 @@ function gtm4wp_container_output() {
 	$container_id = sanitize_text_field( $options['gtm4wp_container_id'] );
 	if ( !empty($container_id) ) {
 		printf( "<!-- Google Tag Manager -->
-			<noscript><iframe src=\"//www.googletagmanager.com/ns.html?id=%s\"
-			height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>
-			<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-			new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-			j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-			'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-			})(window,document,'script','dataLayer','%s');</script>
-			<!-- End Google Tag Manager -->", $container_id, $container_id );
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','%s');</script>
+<!-- End Google Tag Manager -->", $container_id );
 	}
+}
+function gtm4wp_noscript_output() {
+ $options = get_option( 'gtm4wp_settings' );
+ $container_id = sanitize_text_field( $options['gtm4wp_container_id'] );
+ if ( !empty($container_id) ) {
+	 printf( "<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=%s\"
+height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->", $container_id );
+ }
 }
 
 /**
