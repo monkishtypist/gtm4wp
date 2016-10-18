@@ -16,16 +16,16 @@ if(!defined('ABSPATH')) exit;
 add_action( 'admin_menu', 'gtm4wp_add_admin_menu' );
 add_action( 'admin_init', 'gtm4wp_settings_init' );
 
-// Theme Hooks Alliance actions
 add_action( 'wp_head', 'gtm4wp_datalayer_init', 1 );
 add_action( 'wp_head', 'gtm4wp_container_output', 2 );
 add_action( 'wp_footer', 'gtm4wp_woo_datalayer', 10 );
+// Theme Hooks Alliance actions
 add_action( 'tha_body_top', 'gtm4wp_noscript_output', 2 );
 // And in case no THA...
-add_action( 'gtm4wp_render', 'gtm4wp_container_output', 10 );
+add_action( 'gtm4wp_noscript', 'gtm4wp_noscript_output', 10 );
 
-function gtm4wp_render() {
-	do_action( 'gtm4wp_render' ); // use for hooking if tha_body_top not available
+function gtm4wp_noscript() {
+	do_action( 'gtm4wp_noscript' ); // use for hooking if tha_body_top not available
 }
 
 function gtm4wp_add_admin_menu(  ) {
@@ -71,8 +71,10 @@ function gtm4wp_brand_render(  ) {
 }
 
 function gtm4wp_settings_section_callback(  ) {
-	echo '<p>'. __( 'This plugin requires you have access to edit your theme files OR your theme includes a \'tha_body_top\' hook. Per updated Google Tag Manager best practices, there is one section of code which will be injected in the \'wp_head\' area, and another pixel piece which should appear immediately after the opening body tag, which is where \'tha_body_top\' would output.', 'gtm4wp' ) .'</p>';
-	echo '<p>'. __( 'For more information, see ', 'gtm4wp' ) .'<a href="https://github.com/progothemes/gtm4wp" target="_blank">https://github.com/progothemes/gtm4wp</a></p>';
+	echo '<p>'. __( 'This plugin adds Google Tag Manager script to the &lt;head&gt; of your theme.', 'gtm4wp' ) .'</p>';
+	echo '<p>'. __( 'If your theme includes Theme Hook Alliance hooks, Google Tag Manager &lt;noscript&gt; will be added to the \'tha_body_top\' hook.', 'gtm4wp' ) .'</p>';
+	echo '<p>'. __( 'If your theme does not include Theme Hook Alliance hooks, you will need to call the \'gtm4wp_noscript\' hook just after the opening &gt;body&lt; tag in your theme.', 'gtm4wp' ) .'</p>';
+	echo '<p>'. __( 'For more information, see the plugin\'s README.md file.', 'gtm4wp' );
 }
 
 /**
@@ -110,14 +112,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 	}
 }
 function gtm4wp_noscript_output() {
- $options = get_option( 'gtm4wp_settings' );
- $container_id = sanitize_text_field( $options['gtm4wp_container_id'] );
- if ( !empty($container_id) ) {
-	 printf( "<!-- Google Tag Manager (noscript) -->
+	$options = get_option( 'gtm4wp_settings' );
+	$container_id = sanitize_text_field( $options['gtm4wp_container_id'] );
+	if ( !empty($container_id) ) {
+		printf( "<!-- Google Tag Manager (noscript) -->
 <noscript><iframe src=\"https://www.googletagmanager.com/ns.html?id=%s\"
 height=\"0\" width=\"0\" style=\"display:none;visibility:hidden\"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->", $container_id );
- }
+	}
 }
 
 /**
