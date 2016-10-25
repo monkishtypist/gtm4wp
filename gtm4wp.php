@@ -289,7 +289,10 @@ function gtm4wp_woo_add_to_cart( $product_id ) {
 		endif;
 
 		// print script
-		printf('<script>dataLayer.push(%1$s);</script>', $str);
+		printf('<script>
+			jQuery(\'.single_add_to_cart_button\').click(function() {
+				dataLayer.push(%1$s);
+			});</script>', $str);
 		printf('<script>console.log(\'Clicked %1$s!\');</script>', $product_id);
 	} else {
 		return false;
