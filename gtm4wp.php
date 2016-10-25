@@ -257,9 +257,20 @@ function gtm4wp_woo_datalayer() {
 }
 
 
-//add_action( 'woocommerce_ajax_added_to_cart', 'gtm4wp_woo_add_to_cart' );
-add_action( 'woocommerce_add_to_cart', 'gtm4wp_woo_add_to_cart' );
-function gtm4wp_woo_add_to_cart( $product_id ) {
+
+
+// Register the script
+wp_register_script( 'gtm4wp_js', plugins_url( '/js/gtm4wp.js' , __FILE__ ), array( 'jquery' ) );
+
+// Localize the script with new data
+$product_array = gtm4wp_woo_product_array();
+
+wp_localize_script( 'gtm4wp_js', 'product', $product_array );
+
+// Enqueued script with localized data.
+wp_enqueue_script( 'gtm4wp_js' );
+
+function gtm4wp_woo_product_array( $product_id = false ) {
 	if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 		// Globals and default vars
 		global $woocommerce;
@@ -267,12 +278,10 @@ function gtm4wp_woo_add_to_cart( $product_id ) {
 		$options = get_option( 'gtm4wp_settings' );
 		$brand = sanitize_text_field( $options['gtm4wp_brand'] );
 
-		$str = '';
-		$strArr = array();
+		$product_array = array();
 
-		// PRODUCT pages
 		if ( is_product() ):
-			$product = new WC_Product( $product_id );
+			$product = $product_id ? new WC_Product( $product_id ) : new WC_Product( get_the_ID() );
 			$variation_skus = '';
 			if ( $product->product_type == 'variable' ) { // Get variation Skus
 				$variations = $product->get_available_variations();
@@ -284,16 +293,20 @@ function gtm4wp_woo_add_to_cart( $product_id ) {
 				$variation_skus .= implode(',', $skusArr);
 				$variation_skus .= '}]';
 			}
+			
 			$terms = get_the_terms( $product->post->ID, 'product_cat' );
-			$str .= sprintf( '{\'event\': \'enhanceEcom Product Click\', \'ecommerce\': { \'click\': { \'actionField\': {\'list\': \'%s\'}, \'products\': [{ \'id\': \'%s\', \'name\': \'%s\', \'price\': %f, \'brand\': \'%s\', \'category\': \'%s\', \'variant\': \'%s\' }]}}}', $terms[0]->name, $product->get_sku(), get_the_title(), $product->get_price(), $brand, $terms[0]->name, $variation_skus );
+			
+			$product_array['brand'] 	= $brand;
+			$product_array['category'] 	= $terms[0]->name;
+			$product_array['id'] 		= $product->get_sku();
+			$product_array['list'] 		= $terms[0]->name;
+			$product_array['name'] 		= get_the_title();
+			$product_array['price'] 	= $product->get_price();
+			$product_array['variant'] 	= $variation_skus;
+
 		endif;
 
-		// print script
-		printf('<script>
-			jQuery(\'.single_add_to_cart_button\').click(function() {
-				dataLayer.push(%1$s);
-			});</script>', $str);
-		printf('<script>console.log(\'Clicked %1$s!\');</script>', $product_id);
+		return $product_array;
 	} else {
 		return false;
 	}
