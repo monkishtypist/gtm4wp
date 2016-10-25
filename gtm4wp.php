@@ -266,7 +266,7 @@ function gtm4wp_woo_datalayer() {
  * This function includes the plugin scripts and styles.
  *
  */
-function gtm4wp_scripts {
+function gtm4wp_scripts() {
 	// Register the script
 	wp_register_script( 'gtm4wp_js', plugins_url( '/js/gtm4wp.js' , __FILE__ ), array( 'jquery' ) );
 	// Localize the script with new data
