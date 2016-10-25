@@ -289,6 +289,7 @@ function gtm4wp_woo_add_to_cart( $product_id ) {
 
 		// print script
 		printf('<script>dataLayer.push(%1$s);</script>', $str);
+		print('<script>console.log(\'Clicked!\');</script>');
 	} else {
 		return false;
 	}
