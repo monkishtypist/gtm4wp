@@ -150,10 +150,6 @@ function gtm4wp_woo_data_layer() {
 		$str = '';
 		$strArr = array();
 
-
-		// Start Script
-		$str = '<script>dataLayer.push(';
-
 		// PRODUCT CATEGORY
 		if ( is_product_category() ):
 			$category = '';
@@ -253,9 +249,46 @@ function gtm4wp_woo_data_layer() {
 			$str .= ']}}}';
 		endif;
 
-		$str .= ');</script>';
 		// print script
-		print($str);
+		printf('<script>dataLayer.push(%1$s);</script>', $str);
+	} else {
+		return false;
+	}
+}
+
+
+add_action( 'woocommerce_ajax_added_to_cart', 'gtm4wp_woo_add_to_cart' );
+function gtm4wp_woo_add_to_cart( $product_id ) {
+	if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
+		// Globals and default vars
+		global $woocommerce;
+
+		$options = get_option( 'gtm4wp_settings' );
+		$brand = sanitize_text_field( $options['gtm4wp_brand'] );
+
+		$str = '';
+		$strArr = array();
+
+		// PRODUCT pages
+		if ( is_product() ):
+			$product = new WC_Product( $product_id );
+			$variation_skus = '';
+			if ( $product->product_type == 'variable' ) { // Get variation Skus
+				$variations = $product->get_available_variations();
+				$variation_skus = '[{';
+				$skusArr = array();
+				foreach ($variations as $variation) {
+					$skusArr = $variation['sku'];
+				}
+				$variation_skus .= implode(',', $skusArr);
+				$variation_skus .= '}]';
+			}
+			$terms = get_the_terms( $product->post->ID, 'product_cat' );
+			$str .= sprintf( '{\'event\': \'enhanceEcom Product Click\', \'ecommerce\': { \'click\': { \'actionField\': {\'list\': \'%s\'}, \'products\': [{ \'id\': \'%s\', \'name\': \'%s\', \'price\': %f, \'brand\': \'%s\', \'category\': \'%s\', \'variant\': \'%s\' }]}}}', $terms[0]->name, $product->get_sku(), get_the_title(), $product->get_price(), $brand, $terms[0]->name, $variation_skus );
+		endif;
+
+		// print script
+		printf('<script>dataLayer.push(%1$s);</script>', $str);
 	} else {
 		return false;
 	}
