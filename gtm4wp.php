@@ -137,8 +137,8 @@ function gtm4wp_datalayer_init() {
  *
  * https://developers.google.com/tag-manager/enhanced-ecommerce
  */
-add_action( 'wp_footer', 'gtm4wp_woo_data_layer' );
-function gtm4wp_woo_data_layer() {
+//add_action( 'wp_footer', 'gtm4wp_woo_datalayer' );
+function gtm4wp_woo_datalayer() {
 	if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 		// Globals and default vars
 		global $woocommerce;
@@ -257,7 +257,8 @@ function gtm4wp_woo_data_layer() {
 }
 
 
-add_action( 'woocommerce_ajax_added_to_cart', 'gtm4wp_woo_add_to_cart' );
+//add_action( 'woocommerce_ajax_added_to_cart', 'gtm4wp_woo_add_to_cart' );
+add_action( 'woocommerce_add_to_cart', 'gtm4wp_woo_add_to_cart' );
 function gtm4wp_woo_add_to_cart( $product_id ) {
 	if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 		// Globals and default vars
@@ -289,7 +290,7 @@ function gtm4wp_woo_add_to_cart( $product_id ) {
 
 		// print script
 		printf('<script>dataLayer.push(%1$s);</script>', $str);
-		print('<script>console.log(\'Clicked!\');</script>');
+		printf('<script>console.log(\'Clicked %1$s!\');</script>', $product_id);
 	} else {
 		return false;
 	}
