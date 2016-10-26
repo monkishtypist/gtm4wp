@@ -1,4 +1,5 @@
 (function( $ ) {
+	// On click Add to Cart
 	$('.single_add_to_cart_button').on('click', function() {
 		dataLayer.push({
 			'event': 'enhanceEcom Product Click', 
@@ -18,6 +19,8 @@
 				}
 			}
 		});
+		console.log(product);
 	});
+	// Debugging
 	console.log(dataLayer);
 })(jQuery);
