@@ -129,7 +129,7 @@ function gtm4wp_wee_category_items_part( $_category_slug = false ) {
 }
 
 // Return Product details
-function gtm4wp_wee_product_detail_part( $_product_id = false, $singular = false ) {
+function gtm4wp_wee_product_detail_part( $_product_id = false, $stringify = true ) {
 	if ( ! $_product_id ) { return false; }
 
 	$options = get_option( 'gtm4wp_settings' );
@@ -146,16 +146,26 @@ function gtm4wp_wee_product_detail_part( $_product_id = false, $singular = false
 		$_vars = implode( ', ', $_variation_attribute );
 	}
 	$_terms   = get_the_terms( $_product->post->ID, 'product_cat' );
-	// the replacement vars
-	$__brand = sanitize_text_field( $options['gtm4wp_brand'] );
-	$__cat    = $_terms[0]->name;
-	$__id     = ( $_product->get_sku() ? $_product->get_sku() : $_product->post->ID );
-	$__name   = $_product->post->post_title;
-	$__price  = $_product->get_price();
-	$__vars   = sprintf( '%s', $_vars );
+	
+	// New Product Object
+	$p_obj = new stdClass;
+	$p_obj->brand    = sanitize_text_field( $options['gtm4wp_brand'] );
+	$p_obj->category = $_terms[0]->name;
+	$p_obj->id       = ( $_product->get_sku() ? $_product->get_sku() : $_product->post->ID );
+	$p_obj->name     = $_product->post->post_title;
+	$p_obj->price    = $_product->get_price();
+	$p_obj->variant  = sprintf( '%s', $_vars );
+	
 	// the string
-	$str = sprintf( '{ \'id\': \'%1$s\', \'name\': \'%2$s\', \'price\': %3$f, \'brand\': \'%4$s\', \'category\': \'%5$s\', \'variant\': \'%6$s\' }', $__id, $__name, $__price, $__brand, $__cat, $__vars );
-	return $str;
+	$str = sprintf( '{ \'id\': \'%1$s\', \'name\': \'%2$s\', \'price\': %3$f, \'brand\': \'%4$s\', \'category\': \'%5$s\', \'variant\': \'%6$s\' }', $p_obj->id, $p_obj->name, $p_obj->price, $p_obj->brand, $p_obj->category, $p_obj->variant );
+	
+	// the results
+	if ( $stringify ) {
+		return $str;
+	}
+	else {
+		return $p_obj;
+	}
 }
 
 // Return Products in Cart
@@ -173,7 +183,7 @@ function gtm4wp_wee_cart_items_part( $_items = false, $singular = false ) {
 			$_variation_attributes = wc_get_product_variation_attributes($_item['variation_id']);
 			$_variation_attribute = array_values($_variation_attributes)[0];
 		} else {
-			$_product = new get_product( $_item['product_id'] );
+			$_product = get_product( $_item['product_id'] );
 		}
 		$_terms = get_the_terms( $_product->post->ID, 'product_cat' );
 		// the replacement vars
@@ -204,57 +214,32 @@ function gtm4wp_wee_action_field_part( $_product_id = false ) {
 }
 
 
-/* Return product details as array
+/* Return product details to AJAX call
  *
- * This function gets the appropriate product details and returns them as an associative array.
+ * This function gets the appropriate product details and returns them as a JSON encoded object.
  *
- * Used in JavaScript localization
  */
-function gtm4wp_woo_product_array( $_product_id = false ) {
-	if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
-		// Globals and default vars
-		global $woocommerce;
-
-		$options = get_option( 'gtm4wp_settings' );
-		$_brand = sanitize_text_field( $options['gtm4wp_brand'] );
-
-		$_product_array = array();
-
-		if ( $_product_id || is_product() ):
-			$_product = $_product_id ? new WC_Product( $_product_id ) : new WC_Product( get_the_ID() );
-			$variation_skus = '';
-			if ( $_product->product_type == 'variable' ) { // Get variation Skus
-				$variations = $_product->get_available_variations();
-				$variation_skus = '[{';
-				$skusArr = array();
-				foreach ($variations as $variation) {
-					$skusArr = $variation['sku'];
-				}
-				$variation_skus .= implode(',', $skusArr);
-				$variation_skus .= '}]';
-			}
-			
-			$_terms = get_the_terms( $_product->post->ID, 'product_cat' );
-			
-			$_product_array['brand'] 	= $_brand;
-			$_product_array['category'] = $_terms[0]->name;
-			$_product_array['id'] 		= $_product->get_sku();
-			$_product_array['list'] 	= $_terms[0]->name;
-			$_product_array['name'] 	= get_the_title();
-			$_product_array['price'] 	= $_product->get_price();
-			$_product_array['variant'] 	= $variation_skus;
-
-		endif;
-
-		return $_product_array;
-	} else {
-		return false;
+function gtm4wp_add_to_cart_ajax() {
+	if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
+		die('WooCommerce not activated');
+	};
+	if ( isset( $_REQUEST ) && $_REQUEST['product_id'] && $_REQUEST['product_qty'] ) {
+		$product = gtm4wp_wee_product_detail_part( $_REQUEST['product_id'], false );
+		$product->quantity = $_REQUEST['product_qty'];
+		echo wp_json_encode( $product );
 	}
+	else {
+		echo 'product data is empty';
+	}
+	die(); // stop executing script
 }
+add_action( 'wp_ajax_gtm4wp_add_to_cart', 'gtm4wp_add_to_cart_ajax' ); // ajax for logged in users
+add_action( 'wp_ajax_nopriv_gtm4wp_add_to_cart', 'gtm4wp_add_to_cart_ajax' ); // ajax for not logged in users
 
 
 
 
-
-
-
+$dump = array();
+$dump[] = get_option('woocommerce_cart_redirect_after_add');
+$dump[] = get_option('woocommerce_enable_ajax_add_to_cart');
+// var_dump($dump);
