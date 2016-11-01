@@ -219,13 +219,14 @@ function gtm4wp_wee_action_field_part( $_product_id = false ) {
  * This function gets the appropriate product details and returns them as a JSON encoded object.
  *
  */
-function gtm4wp_add_to_cart_ajax() {
+function gtm4wp_get_product_ajax() {
 	if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
 		die('WooCommerce not activated');
 	};
 	if ( isset( $_REQUEST ) && $_REQUEST['product_id'] && $_REQUEST['product_qty'] ) {
 		$product = gtm4wp_wee_product_detail_part( $_REQUEST['product_id'], false );
 		$product->quantity = $_REQUEST['product_qty'];
+		if (! empty( $_REQUEST['product_variant'] ) ) { $product->variant = $_REQUEST['product_variant']; }
 		echo wp_json_encode( $product );
 	}
 	else {
@@ -233,5 +234,5 @@ function gtm4wp_add_to_cart_ajax() {
 	}
 	die(); // stop executing script
 }
-add_action( 'wp_ajax_gtm4wp_add_to_cart', 'gtm4wp_add_to_cart_ajax' ); // ajax for logged in users
-add_action( 'wp_ajax_nopriv_gtm4wp_add_to_cart', 'gtm4wp_add_to_cart_ajax' ); // ajax for not logged in users
+add_action( 'wp_ajax_gtm4wp_get_product', 'gtm4wp_get_product_ajax' ); // ajax for logged in users
+add_action( 'wp_ajax_nopriv_gtm4wp_get_product', 'gtm4wp_get_product_ajax' ); // ajax for not logged in users
