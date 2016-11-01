@@ -235,11 +235,3 @@ function gtm4wp_add_to_cart_ajax() {
 }
 add_action( 'wp_ajax_gtm4wp_add_to_cart', 'gtm4wp_add_to_cart_ajax' ); // ajax for logged in users
 add_action( 'wp_ajax_nopriv_gtm4wp_add_to_cart', 'gtm4wp_add_to_cart_ajax' ); // ajax for not logged in users
-
-
-
-
-$dump = array();
-$dump[] = get_option('woocommerce_cart_redirect_after_add');
-$dump[] = get_option('woocommerce_enable_ajax_add_to_cart');
-// var_dump($dump);

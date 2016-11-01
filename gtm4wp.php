@@ -36,10 +36,15 @@ function gtm4wp_noscript() {
 }
 
 // AJAX scripts init
-function gtm4wp_enqueue_ajax_scripts_styles_init() {
+add_action('init', 'gtm4wp_enqueue_ajax_scripts');
+function gtm4wp_enqueue_ajax_scripts() {
 	wp_enqueue_script( 'ajax-script', plugins_url( '/includes/js/script.js', __FILE__ ), array('jquery'), 1.0 );
-	wp_localize_script( 'ajax-script', 'ajax_object', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );
+	$ajax =  array(
+		'ajaxurl' => admin_url( 'admin-ajax.php' ),
+		'woocommerce_cart_redirect_after_add' => get_option('woocommerce_cart_redirect_after_add'),
+		'woocommerce_enable_ajax_add_to_cart' => get_option('woocommerce_enable_ajax_add_to_cart')
+	);
+	wp_localize_script( 'ajax-script', 'ajax_object', $ajax );
 }
-add_action('init', 'gtm4wp_enqueue_ajax_scripts_styles_init');
 
 
