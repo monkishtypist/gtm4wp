@@ -35,6 +35,12 @@ class GTM4WP {
 		$product = get_product( $id );
 		return $product;
 	}
+	public function getProductSingular( $product = false ) {
+		if ( ! $product ) {
+			$product = $this->getProduct();
+		}
+		$this->setProduct( $product );
+	}
 	public function getProductsByCategory( $category = false ) {
 		if ( ! $category ) {
 			$category = get_query_var( 'product_cat' );
@@ -167,7 +173,7 @@ function gtm4wp_woo_datalayer() {
 			$gtm4wp->event = 'enhanceEcom Product Detail View';
 			$gtm4wp->ecommerce  = 'detail';
 			$gtm4wp->list = single_term_title( '', false );
-			$gtm4wp->getProduct();
+			$gtm4wp->getProductSingular();
 		endif;
 		// CART ()
 		if ( is_cart() ):
