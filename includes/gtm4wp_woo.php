@@ -8,6 +8,7 @@ class GTM4WP {
 	protected $options;
 	protected $products;
 	protected $action;
+	public $list;
 
 	public $event;
 	public $ecommerce;
@@ -95,7 +96,7 @@ class GTM4WP {
 			$formattedProduct = new stdClass();
 			$formattedProduct->brand    = sanitize_text_field( $this->options['gtm4wp_brand'] );
 			$formattedProduct->category = $terms[0]->name;
-			$formattedProduct->list     = $terms[0]->name;
+			$formattedProduct->list     = $this->list;
 			$formattedProduct->id       = ( $product->get_sku() ? $product->get_sku() : $product->post->ID );
 			$formattedProduct->name     = $product->post->post_title;
 			$formattedProduct->price    = $product->get_price();
@@ -117,7 +118,7 @@ class GTM4WP {
 
 	public function getActionString() {
 		if ( $this->event === 'enhanceEcom Product Detail View' ) {
-			$str = sprintf( '{ \'list\': \'%1$s\' }', $this->action->list );
+			$str = sprintf( '{ \'list\': \'%1$s\' }', $this->list );
 		}
 		elseif ( $this->event === 'enhanceEcom transactionSuccess' ) {
 			$str = sprintf( '{ \'id\': \'%1$s\', \'affiliation\': \'%2$s\', \'revenue\': %3$f, \'tax\': %4$f, \'shipping\': %5$f, \'coupon\': \'%6$s\' }', $this->action->id, $this->action->affiliation, $this->action->revenue, $this->action->tax, $this->action->shipping, $this->action->coupon );
@@ -125,7 +126,7 @@ class GTM4WP {
 		else {
 			return NULL;
 		}
-		$actionString = sprintf( '{ \'actionField\': %1$s }', $str );
+		$actionString = sprintf( '\'actionField\': %1$s, ', $str );
 		return $actionString;
 	}
 
@@ -155,15 +156,17 @@ function gtm4wp_woo_datalayer() {
 		global $woocommerce;
 		$gtm4wp = new GTM4WP();
 		// PRODUCT CATEGORY (Product Impressions)
-		if ( is_product_category() ):
+		if ( is_product_category() || is_shop() ):
 			$gtm4wp->event = 'enhanceEcom Product Impression';
 			$gtm4wp->ecommerce = 'impressions';
+			$gtm4wp->list = single_term_title( '', false );
 			$gtm4wp->getProductsByCategory();
 		endif;
 		// PRODUCT (Product Details)
 		if ( is_product() ):
 			$gtm4wp->event = 'enhanceEcom Product Detail View';
 			$gtm4wp->ecommerce  = 'detail';
+			$gtm4wp->list = single_term_title( '', false );
 			$gtm4wp->getProduct();
 		endif;
 		// CART ()
