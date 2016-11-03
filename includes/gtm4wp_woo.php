@@ -8,15 +8,17 @@ class GTM4WP {
 	protected $options;
 	protected $products;
 	protected $action;
-	public $list;
 
+	public $hasProduct;
+
+	public $list;
 	public $event;
 	public $ecommerce;
-
 	public $formattedProducts;
 
 	public function __construct() {
 		$this->options = get_option( 'gtm4wp_settings' );
+		$this->hasProduct = false;
 		$this->products = array();
 		$this->action = new stdClass();
 		$this->formattedProducts = array();
@@ -26,6 +28,7 @@ class GTM4WP {
 		$product->quantity = $quantity;
 		$product->variant = $variant;
 		$this->products[] = $product;
+		$this->hasProduct = true;
 	}
 
 	public function getProduct( $id = false ) {

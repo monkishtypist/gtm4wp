@@ -10,13 +10,24 @@ jQuery( function( $ ) {
 	console.log('gtm4wp.js.init');
 
 	// URL params
-	var urlParams = new URLSearchParams(window.location.search);
+	// var urlParams = new URLSearchParams(window.location.search);
+
+	function getUrlParameter(name) {
+		name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+		var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+		var results = regex.exec(location.search);
+		return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+	};
+
+	var q = getUrlParameter('add-to-cart');
 
 	// Single item add to cart on page reload / query parameter add_to_cart=X
-	if ( urlParams.has('add-to-cart') ) {
-		console.log( 'add to cart triggered (query-param: ' + urlParams.get('add-to-cart') + ')' );
+	// if ( urlParams.has('add-to-cart') ) {
+	if ( typeof q !== 'undefined' && q > 0 ) {
+		// console.log( 'add to cart triggered (query-param: ' + urlParams.get('add-to-cart') + ')' );
+		console.log( 'add to cart triggered (query-param: ' + q + ')' );
 		var product = {
-			id: urlParams.get('add-to-cart'),
+			id: getUrlParameter('add-to-cart'), // urlParams.get('add-to-cart'),
 			qty: 1
 		};
 		$.ajax({
