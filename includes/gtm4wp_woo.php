@@ -73,7 +73,7 @@ class GTM4WP {
 	}
 	public function getProductsOrder( $order = false ) {
 		if ( ! $order ) {
-			global $woocommerce;
+			// global $woocommerce;
 			$order = woo_order_obj();
 		}
 		$this->action->affiliation = sanitize_text_field( $this->options['gtm4wp_brand'] );
@@ -121,7 +121,7 @@ class GTM4WP {
 	}
 
 	public function getProductString( $product ) {
-		$str = sprintf( '{ \'name\': \'%1$s\', \'id\': \'%2$s\', \'price\': %3$f, \'brand\': \'%4$s\', \'category\': \'%5$s\', \'list\': \'%6$s\', \'position\': %7$d, \'variant\': \'%8$s\' }', $product->name, $product->id, $product->price, $product->brand, $product->category, $product->list, $product->position, $product->variant );
+		$str = sprintf( '{ \'name\': \'%1$s\', \'id\': \'%2$s\', \'price\': %3$f, \'brand\': \'%4$s\', \'category\': \'%5$s\', \'list\': \'%6$s\', \'position\': %7$d, \'variant\': \'%8$s\', \'quantity\' : %9$d }', $product->name, $product->id, $product->price, $product->brand, $product->category, $product->list, $product->position, $product->variant, $product->quantity );
 		return $str;
 	}
 
@@ -196,7 +196,9 @@ function gtm4wp_woo_datalayer() {
 			$gtm4wp->getProductsOrder();
 		endif;
 		// print script
-		printf( '<script>dataLayer.push(%1$s);</script>', $gtm4wp->getDataLayer() );
+		if ( $gtm4wp->hasProduct ) {
+			printf( '<script>dataLayer.push(%1$s);</script>', $gtm4wp->getDataLayer() );
+		}
 	} else {
 		return false;
 	}
@@ -216,10 +218,10 @@ function gtm4wp_get_product_ajax() {
 	$gtm4wp = new GTM4WP();
 	if ( isset( $_REQUEST ) && $_REQUEST['product_id'] && $_REQUEST['product_qty'] ) {
 		$product = $gtm4wp->getProduct( $_REQUEST['product_id'] );
-		$product->quantity = $_REQUEST['product_qty'];
-		if (! empty( $_REQUEST['product_variant'] ) ) { $product->variant = $_REQUEST['product_variant']; }
+		$quantity = $_REQUEST['product_qty'];
+		$variant = ( ! empty( $_REQUEST['product_variant'] ) ? $_REQUEST['product_variant'] : false );
 
-		$gtm4wp->setProduct( $product );
+		$gtm4wp->setProduct( $product, $quantity, $variant );
 		$formatted = $gtm4wp->getFormattedProducts();
 		echo wp_json_encode( $formatted[0] );
 	}
