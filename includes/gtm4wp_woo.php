@@ -193,6 +193,7 @@ function gtm4wp_woo_datalayer() {
 		// ORDER RECEIVED page
 		if( is_wc_endpoint_url( 'order-received' ) ):
 			$gtm4wp->event = 'enhanceEcom transactionSuccess';
+			$gtm4wp->ecommerce = 'purchase';
 			$gtm4wp->getProductsOrder();
 		endif;
 		// print script

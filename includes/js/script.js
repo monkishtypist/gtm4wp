@@ -179,12 +179,12 @@ jQuery( function( $ ) {
 	// ===================================
 
 	// Remove from cart click
-	$('.product-remove a.remove').on( 'click', function () {
+	$('body.woocommerce-cart a.remove').on( 'click', function () {
 		console.log( 'Remove from cart triggered (click: ' + $(this).attr('data-product_id') + ')' );
 		var product = {
 			id: $(this).attr('data-product_id'),
-			quantity: $(this).parent('.product-remove').siblings('.product-quantity').find('input.qty').val(),
-			variant: $(this).parent('.product-remove').siblings('.product-name').find('dl.variation dd').text()
+			quantity: $(this).parents('.cart_item').find('input.qty').val(),
+			variant: $(this).parents('.cart_item').find('dl.variation dd[class^="variation"]').text()
 		};
 		$.ajax({
 			url: ajax_object.ajaxurl,
