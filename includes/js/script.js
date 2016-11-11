@@ -227,24 +227,39 @@ jQuery( function( $ ) {
 		e.preventDefault();
 		var href= $(this).attr('href');
 		var product_id = $(this).attr('data-product-id');
-		var product_name = $(this).attr('data-product-name');
-		//var product_category = $(this).attr('data-product-cat');
 		
-		dataLayer.push({
-			'event': 'enhanceEcom Product Click',
-			'ecommerce': {
-			  	'click': {
-					//'actionField': {'list': 'Comfort'},
-					'products': [{
-						'name': product_name,	   // Name or ID is required.
-						'id': product_id,
-						'brand': 'Cabeau',
-						//'category': product_category
-					}]
-				}
+		$.ajax({
+			url: ajax_object.ajaxurl,
+			data: {
+				'action'          : 'gtm4wp_get_product',
+				'product_id'      : product_id,
+				'product_qty'     : 1
+			},
+			success: function( data ) {
+				var product = $.parseJSON( data );
+				dataLayer.push({
+					'event': 'enhanceEcom Product Click',
+					'ecommerce': {
+					  	'click': {
+							'actionField': {'list': product.category},	  // Optional list property.
+							'products': [{
+								'id': product.id, 
+								'name': product.name, 
+								'price': product.price, 
+								'brand': product.brand, 
+								'variant': product.variant, 
+								'category': product.category
+							}]
+						}
+					}
+				});
+				console.log( product );
+			},
+			error: function( error ) {
+				console.log( error );
 			}
 		});
-		console.log( dataLayer );
+		
 		//location.href = href;
 		return false;
 	});
