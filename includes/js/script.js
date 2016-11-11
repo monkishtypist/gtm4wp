@@ -245,6 +245,7 @@ jQuery( function( $ ) {
 			}
 		});
 		console.log( dataLayer );
+		location.href = href;
 		return false;
 	});
 });
