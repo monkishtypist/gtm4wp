@@ -179,7 +179,7 @@ jQuery( function( $ ) {
 	// ===================================
 
 	// Remove from cart click
-	$('body.woocommerce-cart a.remove, #nm-mini-cart-list a.remove').on( 'click', function () {
+	$('body.woocommerce-cart a.remove').on( 'click', function () {
 		console.log( 'Remove from cart triggered (click: ' + $(this).attr('data-product_id') + ')' );
 		var product = {
 			id: $(this).attr('data-product_id'),
@@ -265,6 +265,49 @@ jQuery( function( $ ) {
 		
 		//location.href = href;
 		return false;
+	});
+	
+	// Remove from cart click
+	$('#nm-mini-cart-list a.remove').on( 'click', function () {
+		console.log( 'Remove from cart triggered (click: ' + $(this).attr('data-product_id') + ')' );
+		var product = {
+			id: $(this).attr('data-product_id'),
+			quantity: 1
+		};
+		$.ajax({
+			url: ajax_object.ajaxurl,
+			data: {
+				'action'          : 'gtm4wp_get_product',
+				'product_id'      : product.id,
+				'product_qty'     : product.quantity
+			},
+			success: function( data ) {
+				var product = $.parseJSON( data );
+				dataLayer.push({
+					'event': 'removeFromCart', 
+					'ecommerce': { 
+						'remove': { 
+							'actionField': {
+								'list': product.list
+							}, 
+							'products': [{ 
+								'id': product.id, 
+								'name': product.name, 
+								'price': product.price, 
+								'brand': product.brand, 
+								'variant': product.variant, 
+								'category': product.category,
+								'quantity': product.quantity
+							}]
+						}
+					}
+				});
+				console.log( product );
+			},
+			error: function( error ) {
+				console.log( error );
+			}
+		});
 	});
 });
 //EOF
