@@ -222,6 +222,29 @@ jQuery( function( $ ) {
 			}
 		});
 	});
-
+	
+	$('.product_cat_each').on( 'click', function (e) {
+		e.preventDefault();
+		var href= $(this).attr('href');
+		var product_id = $(this).attr('data-product-id');
+		var product_name = $(this).attr('data-product-name');
+		//var product_category = $(this).attr('data-product-cat');
+		
+		dataLayer.push({
+			'event': 'enhanceEcom Product Click',
+			'ecommerce': {
+			  	'click': {
+					//'actionField': {'list': 'Comfort'},
+					'products': [{
+						'name': product_name,	   // Name or ID is required.
+						'id': product_id,
+						'brand': 'Cabeau',
+						//'category': product_category
+					}]
+				}
+			}
+		});
+		return false;
+	});
 });
 //EOF
