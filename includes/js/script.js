@@ -268,7 +268,7 @@ jQuery( function( $ ) {
 	});
 	
 	// Remove from cart click
-	$('#nm-mini-cart-list a.remove').on( 'click', function () {
+	$('.product-details-wrap > a.remove').on( 'click', function () {
 		console.log( 'Remove from cart triggered (click: ' + $(this).attr('data-product_id') + ')' );
 		var product = {
 			id: $(this).attr('data-product_id'),
