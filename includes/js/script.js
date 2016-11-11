@@ -254,6 +254,9 @@ jQuery( function( $ ) {
 					}
 				});
 				console.log( product );
+				setTimeout(function(){
+					location.href = href;
+				}, 1500);
 			},
 			error: function( error ) {
 				console.log( error );
