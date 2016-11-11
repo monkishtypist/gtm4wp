@@ -179,7 +179,7 @@ jQuery( function( $ ) {
 	// ===================================
 
 	// Remove from cart click
-	$('body.woocommerce-cart a.remove').on( 'click', function () {
+	$('body.woocommerce-cart a.remove, #nm-mini-cart-list a.remove').on( 'click', function () {
 		console.log( 'Remove from cart triggered (click: ' + $(this).attr('data-product_id') + ')' );
 		var product = {
 			id: $(this).attr('data-product_id'),
