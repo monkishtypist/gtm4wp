@@ -86,7 +86,7 @@ class GTM4WP {
 		$items = $order->get_items();
 		foreach ($items as $item) {
 			$id = ( $item['variation_id'] > 0 ? $item['variation_id'] : $item['product_id'] );
-			$this->setProduct( $this->getProduct( $id ), $item['quantity'] );
+			$this->setProduct( $this->getProduct( $id ), $item['qty'] );
 		}
 	}
 
