@@ -139,7 +139,7 @@ class GTM4WP {
 		return $actionString;
 	}
 
-	public function getDataLayer( $dataLayerType = false ) {
+	public function getDataLayer() {
 		$actionString = $this->getActionString();
 		$products = $this->getFormattedProducts();
 		$productStringArray = array();
@@ -147,7 +147,7 @@ class GTM4WP {
 			$productStringArray[] = $this->getProductString( $product );
 		}
 		$productString = implode( ', ', $productStringArray );
-		if ( $dataLayerType === 'impression' ) {
+		if ( $this->ecommerce === 'impressions' ) {
 			$str = sprintf( '{ \'event\': \'%1$s\', \'ecommerce\': { \'%2$s\': [ %3$s ] } }', $this->event, $this->ecommerce, $productString );
 		}
 		else {
@@ -169,14 +169,12 @@ function gtm4wp_woo_datalayer() {
 		// Globals and default vars
 		global $woocommerce;
 		$gtm4wp = new GTM4WP();
-		$dataLayerType = false;
 		// PRODUCT CATEGORY (Product Impressions)
 		if ( is_product_category() || is_shop() ):
 			$gtm4wp->event = 'enhanceEcom Product Impression';
 			$gtm4wp->ecommerce = 'impressions';
 			$gtm4wp->list = single_term_title( '', false );
 			$gtm4wp->getProductsByCategory();
-			$dataLayerType = 'impression';
 		endif;
 		// PRODUCT (Product Details)
 		if ( is_product() ):
@@ -205,7 +203,7 @@ function gtm4wp_woo_datalayer() {
 		endif;
 		// print script
 		if ( $gtm4wp->hasProduct ) {
-			printf( '<script>dataLayer.push(%1$s);</script>', $gtm4wp->getDataLayer( $dataLayerType ) );
+			printf( '<script>dataLayer.push(%1$s);</script>', $gtm4wp->getDataLayer() );
 		}
 	} else {
 		return false;
