@@ -19,3 +19,4 @@ To disable GTM, disable the plugin.
 
 ## Enhanced Ecommerce
 GTM4WP uses Google's enhanced ecommerce `dataLayer` object. For more information, see: [Enhanced Ecommerce (UA) Developer Guide](https://developers.google.com/tag-manager/enhanced-ecommerce)
+Enhanced Ecommerce data only works if WooCommerce is installed and active.
