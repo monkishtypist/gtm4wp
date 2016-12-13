@@ -12,6 +12,7 @@ class NLKGitHubPluginUpdater {
   private $repo; // GitHub repo name
   private $pluginFile; // __FILE__ of our plugin
   private $githubAPIResult; // holds data from GitHub
+  private $githubAPIResults; // holds more data from GitHub
 
   function __construct( $pluginFile, $gitHubUsername, $gitHubProjectName ) {
       add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'setTransient' ) );
@@ -45,9 +46,12 @@ class NLKGitHubPluginUpdater {
         $this->githubAPIResult = @json_decode( $this->githubAPIResult );
     }
 
-    // Use only the latest release
+    // Use only the latest release?
     if ( is_array( $this->githubAPIResult ) ) {
-        $this->githubAPIResult = $this->githubAPIResult[0];
+      $this->githubAPIResults = $this->githubAPIResult;
+      $this->githubAPIResult = $this->githubAPIResult[0];
+    } else {
+      $this->githubAPIResults = array( $this->githubAPIResult );
     }
   }
 
@@ -84,77 +88,108 @@ class NLKGitHubPluginUpdater {
     $this->getRepoReleaseInfo();
     // If nothing is found, do nothing
     if ( isset( $response->slug ) && ( $response->slug == $this->slug ) ) {
-    // Add our plugin information
-    $response->slug = $this->slug;
-    $response->plugin_name  = $this->pluginData["Name"];
-    if ( isset( $this->githubAPIResult->tag_name ) ) {
-      $response->new_version = $this->githubAPIResult->tag_name;
-    }
-    $chchchanges = '';
-    if ( isset( $this->githubAPIResult->body ) ) {
-      $chchchanges = $this->githubAPIResult->body;
-      // Gets the required version of WP if available
-      $matches = null;
-      preg_match( "/requires:\s([\d\.]+)/i", $chchchanges, $matches );
-      if ( ! empty( $matches ) ) {
-          if ( is_array( $matches ) ) {
-              if ( count( $matches ) > 1 ) {
-                  $response->requires = $matches[1];
-              }
-          }
+      // Add our plugin information
+      $response->slug = $this->slug;
+      // plugin name(s)
+      $response->name  = $this->pluginData['Name'];
+      $response->plugin_name  = $this->pluginData['Name'];
+      // plugin URL
+      if ( isset( $this->pluginData['PluginURI'] ) ) {
+        $response->homepage = $this->pluginData['PluginURI'];
+      }
+      // plugin Author
+      if ( isset( $this->pluginData['Author'] ) ) {
+        $response->author = $this->pluginData['Author'];
+      }
+      // pull the updated version #
+      if ( isset( $this->githubAPIResult->tag_name ) ) {
+        $response->new_version = $this->githubAPIResult->tag_name;
+        $response->version = $this->githubAPIResult->tag_name;
+      }
+      $chchchanges = '';
+      if ( isset( $this->githubAPIResult->body ) ) {
+        $chchchanges = $this->githubAPIResult->body;
+        // Gets the required version of WP if available
+        $matches = null;
+        preg_match( "/requires:\s([\d\.]+)/i", $chchchanges, $matches );
+        if ( ! empty( $matches ) ) {
+            if ( is_array( $matches ) ) {
+                if ( count( $matches ) > 1 ) {
+                    $response->requires = $matches[1];
+                }
+            }
+        }
+
+        // Gets the tested version of WP if available
+        $matches = null;
+        preg_match( "/tested:\s([\d\.]+)/i", $chchchanges, $matches );
+        if ( ! empty( $matches ) ) {
+            if ( is_array( $matches ) ) {
+                if ( count( $matches ) > 1 ) {
+                    $response->tested = $matches[1];
+                }
+            }
+        }
       }
 
-      // Gets the tested version of WP if available
-      $matches = null;
-      preg_match( "/tested:\s([\d\.]+)/i", $chchchanges, $matches );
-      if ( ! empty( $matches ) ) {
-          if ( is_array( $matches ) ) {
-              if ( count( $matches ) > 1 ) {
-                  $response->tested = $matches[1];
-              }
-          }
+      if ( isset( $this->githubAPIResult->published_at) ) {
+        // take first half only?
+        $response->last_updated = $this->githubAPIResult->published_at;
+        if ( strpos( $response->last_updated, 'T' ) !== false ) {
+          $response->last_updated = substr( $response->last_updated, 0, strpos( $response->last_updated, 'T' ) );
+        }
       }
-    }
-
-    if ( isset( $this->githubAPIResult->published_at) ) {
-      // take first half only?
-      $response->last_updated = $this->githubAPIResult->published_at;
-      if ( strpos( $response->last_updated, 'T' ) !== false ) {
-        $response->last_updated = substr( $response->last_updated, 0, strpos( $response->last_updated, 'T' ) );
-      }
-    }
-    // Create tabs for lightbox
-    $response->sections = array(
-        'description' => "Hello!",
-        'changelog' => "
+      // Create tabs for lightbox
+      $response->sections = array(
+          'description' => "Hello!",
+          'changelog' => "
 
 there are some changes here?
 
-and some others
-
 "
-    );
-
-    if ( isset( $this->githubAPIResult->body ) ) {
-      $response->sections['changelog'] = $this->githubAPIResult->body;
-      require_once( plugin_dir_path( __FILE__ ) . "Parsedown.php" );
-      if ( class_exists( "Parsedown" ) ) {
-        $response->sections['changelog'] = Parsedown::instance()->parse( $this->githubAPIResult->body );
+      );
+      if ( isset( $this->pluginData['Description'] ) ) {
+        $response->sections['description'] = $this->pluginData['Description'];
       }
-    }
 
-    // This is our release download zip file
-    if ( isset( $this->githubAPIResult->zipball_url ) ) {
-      $response->download_link = $this->githubAPIResult->zipball_url;
-    }
-    unset($response->is_ssl);
-    unset($response->fields);
-    unset($response->per_page);
-    unset($response->locale);
+      if ( isset( $this->githubAPIResult->body ) ) {
 
-    return $response;
-  }
-  return false;
+        // see if we can Parsedown it cleaner
+        require_once( plugin_dir_path( __FILE__ ) . "Parsedown.php" );
+        if ( class_exists( "Parsedown" ) ) {
+          $response->sections['changelog'] = "";
+          // actually loop through past changes too?
+          foreach ( $this->githubAPIResults as $k => $a ) {
+            if ( isset( $a->tag_name ) ) {
+              $response->sections['changelog'] .= '<strong>'. $a->tag_name .'</strong>' ."\n\n";
+            }
+            if ( isset( $a->body ) ) {
+              $response->sections['changelog'] .= Parsedown::instance()->parse( $a->body );
+            }
+            $response->sections['changelog'] .= "\n\n";
+          }
+        } else {
+          // set initial changelog
+          $response->sections['changelog'] = $this->githubAPIResult->body;
+        }
+      }
+
+      $response->banners = array(
+        'low' => plugin_dir_url( __FILE__ ) .'assets/banner-772x250.png'
+      );
+
+      // This is our release download zip file
+      if ( isset( $this->githubAPIResult->zipball_url ) ) {
+        $response->download_link = $this->githubAPIResult->zipball_url;
+      }
+      unset($response->is_ssl);
+      unset($response->fields);
+      unset($response->per_page);
+      unset($response->locale);
+
+      return $response;
+    }
+    return false;
   }
 
   // Perform additional actions to successfully install our plugin
