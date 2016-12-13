@@ -74,19 +74,32 @@ class GTM4WP {
 	public function getProductsOrder( $order = false ) {
 		if ( ! $order ) {
 			// global $woocommerce;
-			$order = woo_order_obj();
+			if ( function_exists( 'woo_order_obj' ) ) {
+				$order = woo_order_obj();
+			} else {
+				// get the order info this way
+				global $wp;
+				if ( is_checkout() && ! empty( $wp->query_vars['order-received'] ) ) {
+				  $order_id  = absint( $wp->query_vars['order-received'] );
+				  $order_key = wc_clean( $_GET['key'] );
+					$order = wc_get_order( $order_id );
+				}
+			}
 		}
-		$this->action->affiliation = sanitize_text_field( $this->options['gtm4wp_brand'] );
-		$this->action->coupon = '';
-		$this->action->id = $order->get_order_number();
-		$this->action->revenue = $order->order_total;
-		$this->action->shipping = $order->order_shipping;
-		$this->action->tax = $order->order_tax;
+		// and then
+		if ( $order !== false ) {
+			$this->action->affiliation = sanitize_text_field( $this->options['gtm4wp_brand'] );
+			$this->action->coupon = ''; // no coupon support for now
+			$this->action->id = $order->get_order_number();
+			$this->action->revenue = $order->order_total;
+			$this->action->shipping = $order->order_shipping;
+			$this->action->tax = $order->order_tax;
 
-		$items = $order->get_items();
-		foreach ($items as $item) {
-			$id = ( $item['variation_id'] > 0 ? $item['variation_id'] : $item['product_id'] );
-			$this->setProduct( $this->getProduct( $id ), $item['qty'] );
+			$items = $order->get_items();
+			foreach ($items as $item) {
+				$id = ( $item['variation_id'] > 0 ? $item['variation_id'] : $item['product_id'] );
+				$this->setProduct( $this->getProduct( $id ), $item['qty'] );
+			}
 		}
 	}
 
@@ -238,4 +251,3 @@ function gtm4wp_get_product_ajax() {
 }
 add_action( 'wp_ajax_gtm4wp_get_product', 'gtm4wp_get_product_ajax' ); // ajax for logged in users
 add_action( 'wp_ajax_nopriv_gtm4wp_get_product', 'gtm4wp_get_product_ajax' ); // ajax for not logged in users
-
