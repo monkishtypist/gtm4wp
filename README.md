@@ -7,13 +7,13 @@ Add Google Tag Manager to WordPress, with Enhanced eCommerce DataLayer support f
 3. Activate the "Google Tag Manager 4 WordPress" plugin
 4. Go to the "Google Tag Manager" Settings page to add your Container and optional Brand code.
 5. If your theme uses Theme Hooks Alliance action hooks, then you are done!
-6. If it doesn't, and if you do not see the `noscript` output below your opening `<body>` tag, then you will need to edit your theme's `header.php` file and add `<?php if (function_exists('gtm4wp_noscript')) { gtm4wp_noscript(); } ?>` right below the opening `<body>` tag.
+6. If it doesn't, and if you do not see the `noscript` output below your opening `<body>` tag, then you will need to edit your theme's `header.php` file and add `<?php do_action( 'gtm4wp_noscript' ); ?>` right below the opening `<body>` tag.
 
 ## Usage
 Go to `Settings` -> `Google Tag Manager` and add your Google Tag Manager `container ID` and save.
 Adds latest version of GTM container code and `dataLayer` JavaScript object using `wp_head` hook.
 
-If your theme does not support Theme Hooks Alliance action hook `tha_body_top`, add `<?php if (function_exists('gtm4wp_noscript')) { gtm4wp_noscript(); } ?>` to your theme, right after the opening `<body>` tag.
+If your theme does not support Theme Hooks Alliance action hook `tha_body_top`, add `<?php do_action( 'gtm4wp_noscript' ); ?>` to your theme, right after the opening `<body>` tag.
 
 To disable GTM, disable the plugin.
 
