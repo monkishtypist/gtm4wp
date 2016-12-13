@@ -12,9 +12,8 @@ class NLKGitHubPluginUpdater {
   private $repo; // GitHub repo name
   private $pluginFile; // __FILE__ of our plugin
   private $githubAPIResult; // holds data from GitHub
-  private $accessToken; // GitHub private repo token
 
-  function __construct( $pluginFile, $gitHubUsername, $gitHubProjectName, $accessToken = '' ) {
+  function __construct( $pluginFile, $gitHubUsername, $gitHubProjectName ) {
       add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'setTransient' ) );
       add_filter( 'plugins_api', array( $this, 'setPluginInfo' ), 10, 3 );
       add_filter( 'upgrader_post_install', array( $this, 'postInstall' ), 10, 3 );
@@ -22,7 +21,6 @@ class NLKGitHubPluginUpdater {
       $this->pluginFile = $pluginFile;
       $this->username = $gitHubUsername;
       $this->repo = $gitHubProjectName;
-      $this->accessToken = $accessToken;
   }
 
   // Get information regarding our plugin from WordPress
@@ -40,11 +38,6 @@ class NLKGitHubPluginUpdater {
 
     // Query the GitHub API
     $url = "https://api.github.com/repos/{$this->username}/{$this->repo}/releases";
-
-    // We need the access token for private repos
-    if ( ! empty( $this->accessToken ) ) {
-        $url = add_query_arg( array( "access_token" => $this->accessToken ), $url );
-    }
 
     // Get the results
     $this->githubAPIResult = wp_remote_retrieve_body( wp_remote_get( $url ) );
@@ -72,11 +65,6 @@ class NLKGitHubPluginUpdater {
     // Update the transient to include our updated plugin data
     if ( $doUpdate == 1 ) {
       $package = isset( $this->githubAPIResult->zipball_url ) ? $this->githubAPIResult->zipball_url : '';
-
-      // Include the access token for private GitHub repos
-      if ( !empty( $this->accessToken ) ) {
-        $package = add_query_arg( array( "access_token" => $this->accessToken ), $package );
-      }
 
       $obj = new stdClass();
       $obj->slug = $this->slug;
