@@ -1,5 +1,5 @@
 # Google Tag Manager 4 WordPress
-Add Google Tag Manager to WordPress, with Enhanced eCommerce DataLayer support for WooCommerce.
+Add Google Tag Manager to WordPress, with Enhanced eCommerce DataLayer support for WooCommerce
 
 ## Installation
 1. Download this plugin
