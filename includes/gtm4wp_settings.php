@@ -8,6 +8,14 @@ function gtm4wp_add_admin_menu(  ) {
 	add_submenu_page( 'options-general.php', 'GTM 4 WP', 'Google Tag Manager', 'manage_options', 'gtmforwordpress', 'gtm4wp_options_page' );
 }
 
+//modify the link by unshifting the array
+function gtm4wp_add_settings_link( $links, $file ) {
+    $gtm4wp_settings_link = '<a href="' . admin_url( 'options-general.php?page=gtmforwordpress' ) . '">' . __( 'Settings', 'gtmforwordpress' ) . '</a>';
+    array_unshift( $links, $gtm4wp_settings_link );
+
+    return $links;
+}
+
 // settings
 function gtm4wp_settings_init(  ) {
 	register_setting( 'pluginPage', 'gtm4wp_settings' );

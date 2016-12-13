@@ -3,7 +3,7 @@
  * Plugin Name: Google Tag Manager 4 WordPress
  * Plugin URI: https://github.com/ninthlink/gtm4wp
  * Description: Add Google Tag Manager to WordPress, with Enhanced eCommerce DataLayer support for WooCommerce
- * Version: 2.2.1
+ * Version: 2.2.2
  * Author: Ninthlink, Inc.
  * Author URI: https://www.ninthlink.com
  * Text Domain: gtm4wp
@@ -19,6 +19,10 @@ require_once('includes/gtm4wp_woo.php');
 
 add_action( 'admin_menu', 'gtm4wp_add_admin_menu' );
 add_action( 'admin_init', 'gtm4wp_settings_init' );
+
+// Add a Settings link to the plugin on the Plugins page
+$gtm4wp_plugin_file = 'gtm4wp/gtm4wp.php';
+add_filter( "plugin_action_links_{$gtm4wp_plugin_file}", 'gtm4wp_add_settings_link', 10, 2 );
 
 // GTM
 add_action( 'wp_head', 'gtm4wp_datalayer_init', 1 );
