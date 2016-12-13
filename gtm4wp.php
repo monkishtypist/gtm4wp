@@ -47,8 +47,8 @@ function gtm4wp_enqueue_ajax_scripts() {
 	wp_localize_script( 'ajax-script', 'ajax_object', $ajax );
 }
 
-// adding update checker
-require_once( 'includes/BFIGitHubPluginUpdater.php' );
 if ( is_admin() ) {
-    new BFIGitHubPluginUpdater( __FILE__, 'ninthlink', 'gtm4wp' );
+	// adding update checker
+	require_once( 'includes/NLKGitHubPluginUpdater.php' );
+  new NLKGitHubPluginUpdater( __FILE__, 'ninthlink', 'gtm4wp' );
 }
