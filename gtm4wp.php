@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: Google Tag Manager 4 WordPress
- * Plugin URI: https://github.com/progothemes/gtm4wp
+ * Plugin URI: https://github.com/ninthlink/gtm4wp
  * Description: Add Google Tag Manager to WordPress, with advanced eCommerce DataLayer support for WooCommerce
- * Version: 2.1.4
- * Author: ProGo
- * Author URI: http://www.progo.com
+ * Version: 2.2.0
+ * Author: Ninthlink, Inc.
+ * Author URI: https://www.ninthlink.com
  * Text Domain: gtm4wp
  * License: GPL2
  */
@@ -47,4 +47,8 @@ function gtm4wp_enqueue_ajax_scripts() {
 	wp_localize_script( 'ajax-script', 'ajax_object', $ajax );
 }
 
-
+// adding update checker
+require_once( 'includes/BFIGitHubPluginUpdater.php' );
+if ( is_admin() ) {
+    new BFIGitHubPluginUpdater( __FILE__, 'ninthlink', 'gtm4wp' );
+}
