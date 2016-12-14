@@ -25,8 +25,8 @@ class GTM4WP {
 	}
 
 	public function setProduct( $product, $quantity = 1, $variant = false ) {
-		$product->quantity = $quantity;
-		$product->variant = $variant;
+		$product->quantity = intval( $quantity );
+		$product->variant = esc_html( $variant );
 		$this->products[] = $product;
 		$this->hasProduct = true;
 	}
@@ -46,7 +46,7 @@ class GTM4WP {
 	}
 	public function getProductsByCategory( $category = false ) {
 		if ( ! $category ) {
-			$category = get_query_var( 'product_cat' );
+			$category = esc_html( get_query_var( 'product_cat' ) );
 		}
 		// Get all products in category
 		$args = array(
@@ -80,8 +80,8 @@ class GTM4WP {
 				// get the order info this way
 				global $wp;
 				if ( is_checkout() && ! empty( $wp->query_vars['order-received'] ) ) {
-				  $order_id  = absint( $wp->query_vars['order-received'] );
-				  $order_key = wc_clean( $_GET['key'] );
+					$order_id  = absint( $wp->query_vars['order-received'] );
+					$order_key = wc_clean( $_GET['key'] );
 					$order = wc_get_order( $order_id );
 				}
 			}
@@ -91,9 +91,9 @@ class GTM4WP {
 			$this->action->affiliation = sanitize_text_field( $this->options['gtm4wp_brand'] );
 			$this->action->coupon = ''; // no coupon support for now
 			$this->action->id = $order->get_order_number();
-			$this->action->revenue = $order->order_total;
-			$this->action->shipping = $order->order_shipping;
-			$this->action->tax = $order->order_tax;
+			$this->action->revenue = esc_html( $order->order_total );
+			$this->action->shipping = esc_html( $order->order_shipping );
+			$this->action->tax = esc_html( $order->order_tax );
 
 			$items = $order->get_items();
 			foreach ($items as $item) {
@@ -115,17 +115,17 @@ class GTM4WP {
 			}
 			$terms   = get_the_terms( $product->post->ID, 'product_cat' );
 			// Update Product Object
-			$formattedProduct = new stdClass();
+			$formattedProduct 			= new stdClass();
 			$formattedProduct->brand    = sanitize_text_field( $this->options['gtm4wp_brand'] );
-			$formattedProduct->category = $terms[0]->name;
-			$formattedProduct->list     = $this->list;
-			$formattedProduct->id       = ( $product->get_sku() ? $product->get_sku() : $product->post->ID );
-			$formattedProduct->name     = $product->post->post_title;
+			$formattedProduct->category = esc_html( $terms[0]->name );
+			$formattedProduct->list     = esc_html( $this->list );
+			$formattedProduct->id       = ( $product->get_sku() ? esc_html( $product->get_sku() ) : $product->post->ID );
+			$formattedProduct->name     = esc_html( $product->post->post_title );
 			$formattedProduct->price    = $product->get_price();
-			$formattedProduct->variant  = $product->variant;
-			$formattedProduct->quantity = $product->quantity;
-			$formattedProduct->position = $key;
-			$this->formattedProducts[] = $formattedProduct;
+			$formattedProduct->variant  = esc_html( $product->variant );
+			$formattedProduct->quantity = esc_html( $product->quantity );
+			$formattedProduct->position = esc_html( $key );
+			$this->formattedProducts[] 	= $formattedProduct;
 		}
 	}
 	public function getFormattedProducts() {
@@ -134,7 +134,7 @@ class GTM4WP {
 	}
 
 	public function getProductString( $product ) {
-		$str = sprintf( '{ \'name\': \'%1$s\', \'id\': \'%2$s\', \'price\': %3$f, \'brand\': \'%4$s\', \'category\': \'%5$s\', \'list\': \'%6$s\', \'position\': %7$d, \'variant\': \'%8$s\', \'quantity\' : %9$d }', $product->name, $product->id, $product->price, $product->brand, $product->category, $product->list, $product->position, $product->variant, $product->quantity );
+		$str = sprintf( '{ \'name\': \'%1$s\', \'id\': \'%2$s\', \'price\': %3$f, \'brand\': \'%4$s\', \'category\': \'%5$s\', \'list\': \'%6$s\', \'position\': %7$d, \'variant\': \'%8$s\', \'quantity\' : %9$d }', esc_html( $product->name ), esc_html( $product->id ), esc_html( $product->price ), esc_html( $product->brand ), esc_html( $product->category ), esc_html( $product->list ), intval( $product->position ), esc_html( $product->variant ), intval( $product->quantity ) );
 		return $str;
 	}
 
@@ -143,7 +143,7 @@ class GTM4WP {
 			$str = sprintf( '{ \'list\': \'%1$s\' }', $this->list );
 		}
 		elseif ( $this->event === 'enhanceEcom transactionSuccess' ) {
-			$str = sprintf( '{ \'id\': \'%1$s\', \'affiliation\': \'%2$s\', \'revenue\': %3$f, \'tax\': %4$f, \'shipping\': %5$f, \'coupon\': \'%6$s\' }', $this->action->id, $this->action->affiliation, $this->action->revenue, $this->action->tax, $this->action->shipping, $this->action->coupon );
+			$str = sprintf( '{ \'id\': \'%1$s\', \'affiliation\': \'%2$s\', \'revenue\': %3$f, \'tax\': %4$f, \'shipping\': %5$f, \'coupon\': \'%6$s\' }', esc_html( $this->action->id ), esc_html( $this->action->affiliation ), esc_html( $this->action->revenue ), esc_html( $this->action->tax ), esc_html( $this->action->shipping ), esc_html( $this->action->coupon ) );
 		}
 		else {
 			return NULL;
@@ -160,11 +160,11 @@ class GTM4WP {
 			$productStringArray[] = $this->getProductString( $product );
 		}
 		$productString = implode( ', ', $productStringArray );
-		if ( $this->ecommerce === 'impressions' ) {
-			$str = sprintf( '{ \'event\': \'%1$s\', \'ecommerce\': { \'%2$s\': [ %3$s ] } }', $this->event, $this->ecommerce, $productString );
+		if ( esc_html( $this->ecommerce ) === 'impressions' ) {
+			$str = sprintf( '{ \'event\': \'%1$s\', \'ecommerce\': { \'%2$s\': [ %3$s ] } }', esc_html( $this->event ), esc_html( $this->ecommerce ), $productString );
 		}
 		else {
-			$str = sprintf( '{ \'event\': \'%1$s\', \'ecommerce\': { \'%2$s\': { %4$s \'products\': [ %3$s ] } } }', $this->event, $this->ecommerce, $productString, $actionString );
+			$str = sprintf( '{ \'event\': \'%1$s\', \'ecommerce\': { \'%2$s\': { %4$s \'products\': [ %3$s ] } } }', esc_html( $this->event ), esc_html( $this->ecommerce ), $productString, $actionString );
 		}
 		return $str;
 	}
