@@ -177,7 +177,7 @@ class GTM4WP {
 			$productStringArray[] = $product->id;
 			$productValueArray[] = $product->price;
 		}
-		$productString = implode( ', ', $productStringArray );
+		$productString = '[' . implode( ', ', $productStringArray ) . ']';
 		switch ($value) {
 			case 'total':
 				$productValue = array_sum( $productValueArray );
