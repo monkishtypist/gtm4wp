@@ -3,7 +3,7 @@
  * Plugin Name: Google Tag Manager 4 WordPress
  * Plugin URI: https://github.com/ninthlink/gtm4wp
  * Description: Add Google Tag Manager to WordPress, with Enhanced eCommerce DataLayer support for WooCommerce
- * Version: 2.2.4
+ * Version: 2.2.5
  * Author: Tim Spinks
  * Author URI: https://www.monkishtypist.com
  * Text Domain: gtm4wp
