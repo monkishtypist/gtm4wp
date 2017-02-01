@@ -168,6 +168,29 @@ class GTM4WP {
 		}
 		return $str;
 	}
+
+	public function getRetargetingDataLayer( $value = 'max' ) {
+		$products = $this->getFormattedProducts();
+		$productStringArray = array();
+		$productValueArray = array();
+		foreach ( $products as $product ) {
+			$productStringArray[] = $product->id;
+			$productValueArray[] = $product->price;
+		}
+		$productString = implode( ', ', $productStringArray );
+		switch ($value) {
+			case 'total':
+				$productValue = array_sum( $productValueArray );
+				break;
+			
+			case 'max':
+			default:
+				$productValue = max( $productValueArray );
+				break;
+		}
+		$str = sprintf( '{ \'ecomm_prodid\': \'%1$s\', \'ecomm_pagetype\': \'%2$s\', \'ecomm_totalvalue\': %3$f }', $productString, $product->category, $productValue );
+		return $str;
+	}
 }
 
 
@@ -188,6 +211,7 @@ function gtm4wp_woo_datalayer() {
 			$gtm4wp->ecommerce = 'impressions';
 			$gtm4wp->list = single_term_title( '', false );
 			$gtm4wp->getProductsByCategory();
+			printf( '<script>dataLayer.push(%1$s);</script>', $gtm4wp->getRetargetingDataLayer() );
 		endif;
 		// PRODUCT (Product Details)
 		if ( is_product() ):
@@ -195,18 +219,21 @@ function gtm4wp_woo_datalayer() {
 			$gtm4wp->ecommerce  = 'detail';
 			$gtm4wp->list = single_term_title( '', false );
 			$gtm4wp->getProductSingular();
+			printf( '<script>dataLayer.push(%1$s);</script>', $gtm4wp->getRetargetingDataLayer() );
 		endif;
 		// CART ()
 		if ( is_cart() ):
 			$gtm4wp->event = 'View Cart';
 			$gtm4wp->ecommerce  = 'cart';
 			$gtm4wp->getProductsCart();
+			printf( '<script>dataLayer.push(%1$s);</script>', $gtm4wp->getRetargetingDataLayer('total') );
 		endif;
 		// CHECKOUT ()
 		if ( is_checkout() ):
 			$gtm4wp->event = 'Product Checkout';
 			$gtm4wp->ecommerce = 'checkout';
 			$gtm4wp->getProductsCart();
+			printf( '<script>dataLayer.push(%1$s);</script>', $gtm4wp->getRetargetingDataLayer('total') );
 		endif;
 		// ORDER RECEIVED page
 		if( is_wc_endpoint_url( 'order-received' ) ):
