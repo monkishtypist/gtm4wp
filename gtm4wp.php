@@ -1,13 +1,15 @@
 <?php
 /**
  * Plugin Name: Google Tag Manager 4 WordPress
- * Plugin URI: https://github.com/ninthlink/gtm4wp
- * Description: Add Google Tag Manager to WordPress, with Enhanced eCommerce DataLayer support for WooCommerce
- * Version: 2.2.5
+ * Plugin URI: https://github.com/monkishtypist/gtm4wp
+ * Description: Add Google Tag Manager to WordPress
+ * Version: 3.0.0
  * Author: Tim Spinks
  * Author URI: https://www.monkishtypist.com
+ * Contributers: Alex Chousmith
  * Text Domain: gtm4wp
  * License: GPL2
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
 
 //exit if accessed directly
@@ -53,6 +55,6 @@ function gtm4wp_enqueue_ajax_scripts() {
 
 if ( is_admin() ) {
 	// adding update checker
-	require_once( 'includes/NLKGitHubPluginUpdater.php' );
-  new NLKGitHubPluginUpdater( __FILE__, 'ninthlink', 'gtm4wp' );
+	require_once( 'includes/github_plugin_updater.php' );
+  new GitHubPluginUpdater( __FILE__, 'monkishtypist', 'gtm4wp' );
 }

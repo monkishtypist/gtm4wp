@@ -4,7 +4,7 @@
 * via https://code.tutsplus.com/tutorials/distributing-your-plugins-in-github-with-automatic-updates--wp-34817
 *
 */
-class NLKGitHubPluginUpdater {
+class GitHubPluginUpdater {
 
   private $slug; // plugin slug
   private $pluginData; // plugin data
