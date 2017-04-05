@@ -68,7 +68,7 @@ class GTM4WP {
 			$items = $woocommerce->cart->get_cart();
 		}
 		foreach ($items as $item) {
-			$this->setProduct( $this->getProduct( $item['product_id'] ), $item['quantity'], array_values($item['variation'])[0] );
+			$this->setProduct( $this->getProduct( $item['product_id'] ), $item['quantity'], array_values( $item['variation'][0] ) );
 		}
 	}
 	public function getProductsOrder( $order = false ) {
